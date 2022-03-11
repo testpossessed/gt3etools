@@ -17,10 +17,10 @@ internal class AccConfigProvider
         return JsonConvert.DeserializeObject<BroadcastingSettings>(content);
     }
 
-    internal static bool IsValid()
-    {
-        var broadcastingSettings = GetBroadcastingSettings();
 
-        return broadcastingSettings is {UpdListenerPort: > 0};
+    internal static void SaveBroadcastingSettings(BroadcastingSettings settings)
+    {
+        var json = JsonConvert.SerializeObject(settings);
+        File.WriteAllText(PathProvider.AccBroadcastingSettingsFilePath, json);
     }
 }

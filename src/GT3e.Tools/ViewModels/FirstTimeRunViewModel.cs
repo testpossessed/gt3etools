@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Windows;
 using System.Windows.Input;
+using GT3e.Tools.Models;
 using GT3e.Tools.Services;
 using Microsoft.Toolkit.Mvvm.ComponentModel;
 using Microsoft.Toolkit.Mvvm.Input;
@@ -13,18 +14,23 @@ public class FirstTimeRunViewModel : ObservableObject
 {
     private Visibility broadcastingCheckFailPanelVisibility;
     private Visibility broadcastingCheckSuccessPanelVisibility;
+    private string broadcastingPort;
+    private Visibility broadcastingSettingsVisibility;
     private bool changeSettingsForMe;
     private Visibility changeSettingsForMeVisibility;
+    private string commandPassword;
+    private string connectionPassword;
+    private Visibility finishedSummaryVisibility;
     private Visibility firstTimeRunVisibility;
     private Visibility installationCheckFailPanelVisibility;
     private Visibility installationCheckSuccessPanelVisibility;
     private bool isComplete;
     private bool isFinishEnabled;
     private bool isNextEnabled;
+    private int listenerPort;
     private Visibility openBroadcastingFileVisibility;
     private int pageIndex;
     private Visibility retryBroadcastingCheckVisibility;
-    private string broadcastingPort;
 
     public FirstTimeRunViewModel()
     {
@@ -34,14 +40,20 @@ public class FirstTimeRunViewModel : ObservableObject
         this.RetryBroadcastingCheckCommand = new RelayCommand(this.ProcessBroadcastingSettingsCheck);
         this.OpenBroadcastingFileCommand = new RelayCommand(this.HandleOpenBroadcastingFileCommand);
         this.RetryInstallationCheck = new RelayCommand(this.ProcessInstallationCheck);
+        this.SaveBroadcastingSettingsCommand = new RelayCommand(this.HandleSaveBroadcastingSettingsCommand);
         this.InstallationCheckSuccessPanelVisibility = Visibility.Hidden;
         this.InstallationCheckFailPanelVisibility = Visibility.Hidden;
         this.BroadcastingCheckFailPanelVisibility = Visibility.Hidden;
         this.BroadcastingCheckSuccessPanelVisibility = Visibility.Hidden;
         this.OpenBroadcastingFileVisibility = Visibility.Visible;
         this.RetryBroadcastingCheckVisibility = Visibility.Hidden;
+        this.FinishedSummaryVisibility = Visibility.Hidden;
+        this.BroadcastingSettingsVisibility = Visibility.Hidden;
         this.IsNextEnabled = true;
         this.IsFinishEnabled = false;
+        this.ListenerPort = 9000;
+        this.CommandPassword = string.Empty;
+        this.ConnectionPassword = string.Empty;
     }
 
     public ICommand CancelCommand { get; }
@@ -50,6 +62,7 @@ public class FirstTimeRunViewModel : ObservableObject
     public ICommand OpenBroadcastingFileCommand { get; }
     public ICommand RetryBroadcastingCheckCommand { get; }
     public ICommand RetryInstallationCheck { get; }
+    public ICommand SaveBroadcastingSettingsCommand { get; }
 
     public Visibility BroadcastingCheckFailPanelVisibility
     {
@@ -61,6 +74,16 @@ public class FirstTimeRunViewModel : ObservableObject
     {
         get => this.broadcastingCheckSuccessPanelVisibility;
         set => this.SetProperty(ref this.broadcastingCheckSuccessPanelVisibility, value);
+    }
+    public string BroadcastingPort
+    {
+        get => this.broadcastingPort;
+        set => this.SetProperty(ref this.broadcastingPort, value);
+    }
+    public Visibility BroadcastingSettingsVisibility
+    {
+        get => this.broadcastingSettingsVisibility;
+        set => this.SetProperty(ref this.broadcastingSettingsVisibility, value);
     }
     public bool ChangeSettingsForMe
     {
@@ -77,6 +100,21 @@ public class FirstTimeRunViewModel : ObservableObject
     {
         get => this.changeSettingsForMeVisibility;
         set => this.SetProperty(ref this.changeSettingsForMeVisibility, value);
+    }
+    public string CommandPassword
+    {
+        get => this.commandPassword;
+        set => this.SetProperty(ref this.commandPassword, value);
+    }
+    public string ConnectionPassword
+    {
+        get => this.connectionPassword;
+        set => this.SetProperty(ref this.connectionPassword, value);
+    }
+    public Visibility FinishedSummaryVisibility
+    {
+        get => this.finishedSummaryVisibility;
+        set => this.SetProperty(ref this.finishedSummaryVisibility, value);
     }
 
     public Visibility FirstTimeRunVisibility
@@ -105,6 +143,11 @@ public class FirstTimeRunViewModel : ObservableObject
         get => this.isNextEnabled;
         set => this.SetProperty(ref this.isNextEnabled, value);
     }
+    public int ListenerPort
+    {
+        get => this.listenerPort;
+        set => this.SetProperty(ref this.listenerPort, value);
+    }
     public Visibility OpenBroadcastingFileVisibility
     {
         get => this.openBroadcastingFileVisibility;
@@ -115,11 +158,7 @@ public class FirstTimeRunViewModel : ObservableObject
         get => this.retryBroadcastingCheckVisibility;
         set => this.SetProperty(ref this.retryBroadcastingCheckVisibility, value);
     }
-    public string BroadcastingPort
-    {
-        get => this.broadcastingPort;
-        set => this.SetProperty(ref this.broadcastingPort, value);
-    }
+
     private void HandleCancelCommand()
     {
         if(this.isComplete)
@@ -140,8 +179,8 @@ public class FirstTimeRunViewModel : ObservableObject
         }
     }
 
-    private void HandleFinish() {
-    
+    private void HandleFinish()
+    {
         var userSettings = SettingsProvider.GetSettings();
         userSettings.IsInitialised = true;
         SettingsProvider.SaveSettings(userSettings);
@@ -159,6 +198,9 @@ public class FirstTimeRunViewModel : ObservableObject
             case 2:
                 this.ProcessBroadcastingSettingsCheck();
                 break;
+            case 3:
+                this.ProcessSummaryOrSaveSettings();
+                break;
         }
     }
 
@@ -168,6 +210,20 @@ public class FirstTimeRunViewModel : ObservableObject
         this.RetryBroadcastingCheckVisibility = Visibility.Visible;
         this.ChangeSettingsForMeVisibility = Visibility.Hidden;
         Process.Start("notepad.exe", PathProvider.AccBroadcastingSettingsFilePath);
+    }
+
+    private void HandleSaveBroadcastingSettingsCommand()
+    {
+        var settings = new BroadcastingSettings
+        {
+            UpdListenerPort = this.ListenerPort,
+            ConnectionPassword = this.ConnectionPassword,
+            CommandPassword = this.CommandPassword
+        };
+        AccConfigProvider.SaveBroadcastingSettings(settings);
+        this.FinishedSummaryVisibility = Visibility.Visible;
+        this.BroadcastingSettingsVisibility = Visibility.Hidden;
+        this.IsFinishEnabled = true;
     }
 
     private void ProcessBroadcastingSettingsCheck()
@@ -205,6 +261,23 @@ public class FirstTimeRunViewModel : ObservableObject
         {
             this.InstallationCheckSuccessPanelVisibility = Visibility.Hidden;
             this.InstallationCheckFailPanelVisibility = Visibility.Visible;
+        }
+    }
+
+    private void ProcessSummaryOrSaveSettings()
+    {
+        this.IsNextEnabled = false;
+        this.IsFinishEnabled = false;
+        if (this.ChangeSettingsForMe)
+        {
+            this.FinishedSummaryVisibility = Visibility.Hidden;
+            this.BroadcastingSettingsVisibility = Visibility.Visible;
+        }
+        else
+        {
+            this.FinishedSummaryVisibility = Visibility.Visible;
+            this.BroadcastingSettingsVisibility = Visibility.Hidden;
+            this.IsFinishEnabled = true;
         }
     }
 }
