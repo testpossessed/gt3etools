@@ -54,7 +54,7 @@ public partial class App : Application
     {
         AppDomain.CurrentDomain.UnhandledException += this.HandleUnhandledException;
         SyncfusionLicenseProvider.RegisterLicense(
-            "NDM0NzY2QDMxMzkyZTMxMmUzMFl0aU45OEpZZzR2cEpFUUZEYnZLUC9DeXd5YkM4UFhRRDVEZXlDai9hUEE9");
+            "NTk0NDg0QDMxMzkyZTM0MmUzMFJGNngySWViaG8rWmlVdTQwVldJNHU4ZUJaM2V6YVhMaGd0UTJub0FGVzg9");
         SfSkinManager.ApplyStylesOnApplication = true;
         this.EnsureAppDataFolderExists();
         this.EnsureConfigExists();
