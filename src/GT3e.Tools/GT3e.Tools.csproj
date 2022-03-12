@@ -6,6 +6,7 @@
     <Nullable>enable</Nullable>
     <UseWPF>true</UseWPF>
     <UserSecretsId>a8f417a5-c3c1-4b94-90ee-c56c49b81781</UserSecretsId>
+    <PackageIcon>Icon.png</PackageIcon>
   </PropertyGroup>
 
   <ItemGroup>
@@ -48,7 +49,9 @@
     <Resource Include="flag_red.ico" />
     <Resource Include="folder.ico" />
     <Resource Include="gear.ico" />
-    <Resource Include="Icon.ico" />
+    <Resource Include="Icon.ico">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Resource>
     <Resource Include="save.ico" />
     <Resource Include="wizard-banner.png" />
   </ItemGroup>
@@ -60,6 +63,10 @@
   <ItemGroup>
     <None Update="appsettings.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Icon.png">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
     </None>
   </ItemGroup>
 

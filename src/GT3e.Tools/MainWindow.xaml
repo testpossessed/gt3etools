@@ -8,7 +8,7 @@
                      xmlns:bv="http://schemas.microsoft.com/xaml/behaviors"
                      Icon="Icon.ico"
                      mc:Ignorable="d"
-                     Title="GT3e.com Tools"
+                     Title="GT3e Tools"
                      WindowStartupLocation="CenterScreen"
                      WindowState="Maximized"
                      d:DataContext="{d:DesignInstance vm:MainViewModel}">

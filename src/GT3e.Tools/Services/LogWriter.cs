@@ -1,11 +1,12 @@
-﻿using NLog;
+﻿using System;
+using NLog;
 using NLog.Extensions.Logging;
 
 namespace GT3e.Tools.Services
 {
   internal static class LogWriter
   {
-    private static Logger logger;
+    private static Logger logger = null!;
 
     internal static void Init()
     {
@@ -15,9 +16,15 @@ namespace GT3e.Tools.Services
       LogManager.Configuration.Variables["appDataFolder"] = PathProvider.AppDataFolderPath;
     }
 
-    internal static void Log(LogLevel level, string message)
+    internal static void Error(Exception exception, string message, params object[] args)
     {
-      logger.Log(level, message);
+        logger.Error(exception, message, args);
     }
+
+    internal static void Info(string message)
+    {
+        logger.Info(message);
+    }
+
   }
 }

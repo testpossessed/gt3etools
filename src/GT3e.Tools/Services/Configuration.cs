@@ -2,9 +2,10 @@
 
 namespace GT3e.Tools.Services
 {
+   
   public static class Configuration
   {
-    private static IConfigurationRoot configuration;
+      private static IConfigurationRoot configuration;
 
     internal static void Init()
     {
