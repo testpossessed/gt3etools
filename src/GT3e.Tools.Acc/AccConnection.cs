@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics;
 using System.Net.Sockets;
+using GT3e.Tools.Acc.Data;
 
 namespace GT3e.Tools.Acc;
 
@@ -13,31 +14,37 @@ public class AccConnection
     public AccConnection(string ipAddress,
         int port,
         string displayName,
-        string userPassword,
-        string adminPassword,
+        string connectionPassword,
+        string commandPassword,
         int updateInterval)
     {
         this.IpAddress = ipAddress;
         this.Port = port;
         this.DisplayName = displayName;
-        this.UserPassword = userPassword;
-        this.AdminPassword = adminPassword;
+        this.ConnectionPassword = connectionPassword;
+        this.CommandPassword = commandPassword;
         this.UpdateInterval = updateInterval;
         this.ConnectionIdentifier = $"{this.IpAddress}:{this.Port}";
 
         this.udpClient = new UdpClient();
-        this.udpClient.Connect(ipAddress, port);
         this.messageHandler = new AccMessageHandler(this.ConnectionIdentifier, this.Send);
         this.listenerTask = this.HandleMessages();
     }
 
-    public string AdminPassword { get; }
+    public string CommandPassword { get; }
     public string ConnectionIdentifier { get; }
     public string DisplayName { get; }
     public string IpAddress { get; }
     public int Port { get; }
     public int UpdateInterval { get; }
-    public string UserPassword { get; }
+    public string ConnectionPassword { get; }
+
+    public IObservable<BroadcastingEvent> BroadcastingEvents => this.messageHandler.BroadcastingEvents;
+    public IObservable<ConnectionState> ConnectionStateChanges => this.messageHandler.ConnectionStateChanges;
+    public IObservable<EntryListUpdate> EntryListUpdates => this.messageHandler.EntryListUpdates;
+    public IObservable<RealtimeCarUpdate> RealTimeCarUpdates => this.messageHandler.RealTimeCarUpdates;
+    public IObservable<RealtimeUpdate> RealTimeUpdates => this.messageHandler.RealTimeUpdates;
+    public IObservable<TrackDataUpdate> TrackDataUpdates => this.messageHandler.TrackDataUpdates;
 
     // TODO: override a finalizer only if Dispose(bool disposing) above has code to free unmanaged resources.
     // ~ACCUdpRemoteClient() {
@@ -49,6 +56,12 @@ public class AccConnection
     {
         this.Dispose(true);
         // GC.SuppressFinalize(this);
+    }
+
+    public void Connect()
+    {
+        this.udpClient!.Connect(this.IpAddress, this.Port);
+        this.messageHandler.RequestConnection(this.DisplayName, this.ConnectionPassword, this.UpdateInterval, this.CommandPassword);
     }
 
     public async Task ShutdownAsync()
@@ -95,9 +108,9 @@ public class AccConnection
     private async Task HandleMessages()
     {
         this.messageHandler.RequestConnection(this.DisplayName,
-            this.UserPassword,
+            this.ConnectionPassword,
             this.UpdateInterval,
-            this.AdminPassword);
+            this.CommandPassword);
         while(this.udpClient != null)
         {
             try
