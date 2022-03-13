@@ -2,14 +2,14 @@
 
 public class RealtimeUpdate
 {
-    public string ActiveCamera { get; internal set; }
-    public string ActiveCameraSet { get; internal set; }
+    public string ActiveCamera { get; internal set; } = null!;
+    public string ActiveCameraSet { get; internal set; } = null!;
     public byte AmbientTemp { get; internal set; }
     public ushort BestLapCarIndex { get; internal set; }
     public ushort BestLapDriverIndex { get; internal set; }
-    public LapInfo BestSessionLap { get; internal set; }
+    public LapInfo BestSessionLap { get; internal set; } = null!;
     public float Clouds { get; internal set; }
-    public string CurrentHudPage { get; internal set; }
+    public string CurrentHudPage { get; internal set; } = null!;
     public int EventIndex { get; internal set; }
     public int FocusedCarIndex { get; internal set; }
     public bool IsReplayPlaying { get; internal set; }
@@ -26,4 +26,10 @@ public class RealtimeUpdate
     public TimeSpan TimeOfDay { get; internal set; }
     public byte TrackTemp { get; internal set; }
     public float Wetness { get; internal set; }
+
+    public override string ToString()
+    {
+        return
+            $"Real Time Update: Session Type: {this.SessionType} Phase: {this.Phase}, Remaining Minutes: {this.SessionRemainingTime}";
+    }
 }

@@ -39,31 +39,29 @@ public class VerificationTestViewModel : ObservableObject
         ConsoleLog.Write($"ERROR: {exception.Message}");
     }
 
-    private void HandleBroadcastingEvents(BroadcastingEvent broadcastingEvent)
+    private void HandleBroadcastingEvents(BroadcastingEvent message)
     {
-        ConsoleLog.Write($"Broadcasting Event: Message: {broadcastingEvent.Message}");
+        ConsoleLog.Write(message.ToString());
     }
 
-    private void HandleConnectionStatusUpdates(ConnectionState connectionState)
+    private void HandleConnectionStatusUpdates(ConnectionState message)
     {
-        ConsoleLog.Write(string.IsNullOrWhiteSpace(connectionState.Error)
-                             ? $"Connection State: ID: {connectionState.ConnectionId} Connected: {connectionState.IsConnected} Read Only: {connectionState.IsReadOnly}"
-                             : $"Connection State: ID: {connectionState.ConnectionId} ERROR: {connectionState.Error}");
+        ConsoleLog.Write(message.ToString()!);
     }
 
-    private void HandleEntryListUpdates(EntryListUpdate entryListUpdate)
+    private void HandleEntryListUpdates(EntryListUpdate message)
     {
-        ConsoleLog.Write($"Entry List Update: Race Number: {entryListUpdate.CarInfo.RaceNumber}");
+        ConsoleLog.Write(message.ToString()!);
     }
 
-    private void HandleRealTimeCarUpdates(RealtimeCarUpdate update)
+    private void HandleRealTimeCarUpdates(RealtimeCarUpdate message)
     {
-        ConsoleLog.Write($"Real Time Car Update: CarLocation: {update.CarLocation}");
+        ConsoleLog.Write(message.ToString());
     }
 
-    private void HandleRealTimeUpdates(RealtimeUpdate update)
+    private void HandleRealTimeUpdates(RealtimeUpdate message)
     {
-        ConsoleLog.Write($"Real Time Update: Session Type: {update.SessionType}");
+        ConsoleLog.Write($"Real Time Update: Session Type: {message.SessionType}");
     }
 
     private void HandleStartCommand()

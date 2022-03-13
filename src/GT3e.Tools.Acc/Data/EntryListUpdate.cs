@@ -10,4 +10,9 @@ public class EntryListUpdate
 
     public CarInfo CarInfo { get; }
     public string Sender { get; }
+
+    public override string ToString()
+    {
+        return $"Entry List Update: Sender: {this.Sender}, Car Data: {this.CarInfo}";
+    }
 }

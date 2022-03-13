@@ -1,6 +1,6 @@
 ﻿namespace GT3e.Tools.Acc.Data;
 
-public struct RealtimeCarUpdate
+public class RealtimeCarUpdate
 {
     public int CarIndex { get; internal set; }
     public int DriverIndex { get; internal set; }
@@ -14,10 +14,15 @@ public struct RealtimeCarUpdate
     public int TrackPosition { get; internal set; }
     public float SplinePosition { get; internal set; }
     public int Delta { get; internal set; }
-    public LapInfo BestSessionLap { get; internal set; }
-    public LapInfo LastLap { get; internal set; }
-    public LapInfo CurrentLap { get; internal set; }
+    public LapInfo BestSessionLap { get; internal set; } = null!;
+    public LapInfo LastLap { get; internal set; } = null!;
+    public LapInfo CurrentLap { get; internal set; } = null!;
     public int Laps { get; internal set; }
     public ushort CupPosition { get; internal set; }
     public byte DriverCount { get; internal set; }
+
+    public override string ToString()
+    {
+        return $"Real Time Care Update: Car Index: {this.CarIndex}, Driver Index: {this.DriverIndex}, Lap Info: {this.CurrentLap}";
+    }
 }

@@ -28,4 +28,9 @@ public class CarInfo
     {
         this.Drivers.Add(driverInfo);
     }
+
+    public override string ToString()
+    {
+        return $"Race Number: {this.RaceNumber}, Driver: {this.Drivers[this.CurrentDriverIndex].ShortName} , Team: {this.TeamName}";
+    }
 }
