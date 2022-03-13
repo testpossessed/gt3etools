@@ -1,0 +1,267 @@
+﻿<UserControl x:Class="GT3e.Tools.Views.FirstRunWizard"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:sf="http://schemas.syncfusion.com/wpf"
+             xmlns:b="http://schemas.microsoft.com/xaml/behaviors"
+             xmlns:vm="clr-namespace:GT3e.Tools.ViewModels"
+             mc:Ignorable="d"
+             d:DesignHeight="600"
+             d:DesignWidth="800"
+             VerticalAlignment="Stretch"
+             HorizontalAlignment="Stretch"
+             d:DataContext="{x:Type vm:FirstTimeRunViewModel}">
+    <Grid>
+        <sf:WizardControl Name="initialisationWizard"
+                          BackVisible="False"
+                          HelpVisible="False"
+                          NextEnabled="{Binding IsNextEnabled}"
+                          FinishEnabled="{Binding IsFinishEnabled}"
+                          HorizontalAlignment="Center"
+                          VerticalAlignment="Center"
+                          Width="800"
+                          Height="600"
+                          Padding="0">
+            <b:Interaction.Triggers>
+                <b:EventTrigger EventName="Next">
+                    <b:InvokeCommandAction Command="{Binding NextCommand}" />
+                </b:EventTrigger>
+                <b:EventTrigger EventName="Cancel">
+                    <b:InvokeCommandAction Command="{Binding CancelCommand}" />
+                </b:EventTrigger>
+                <b:EventTrigger EventName="Finish">
+                    <b:InvokeCommandAction Command="{Binding FinishCommand}" />
+                </b:EventTrigger>
+            </b:Interaction.Triggers>
+            <sf:WizardPage Name="introductionPage"
+                           Title="
+                        Welcome to GT3e Tools"
+                           BackVisible="False"
+                           Padding="0"
+                           Margin="0">
+                <Grid Margin="0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+
+                    <Image Source="/wizard-banner.png"
+                           Grid.Column="0"
+                           Margin="0" />
+                    <StackPanel Orientation="Vertical"
+                                Grid.Column="1"
+                                Margin="10">
+                        <TextBlock TextWrapping="Wrap"
+                                   Margin="5">
+                            Since this is your first time using GT3e Tools we need to run a couple of checks to make
+                            sure
+                            the application can work with ACC.  First we will check that you have ACC installed on this
+                            computer, then we will check that ACC is configured for broadcasting.
+                        </TextBlock>
+                        <TextBlock Margin="5">
+                            When you are ready click Next below.
+                        </TextBlock>
+                    </StackPanel>
+                </Grid>
+            </sf:WizardPage>
+
+            <sf:WizardPage Name="installationCheckPage"
+                           Title="ACC Installation Check"
+                           Padding="0"
+                           Margin="0">
+                <Grid Margin="0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+
+                    <Image Source="/wizard-banner.png"
+                           Grid.Column="0"
+                           Margin="0" />
+                    <StackPanel Orientation="Vertical"
+                                Grid.Column="1"
+                                Margin="10">
+                        <TextBlock Margin="5">
+                            We are now checking whether Assetto Corsa Competizione is installed and available for GT3e
+                            Tools
+                        </TextBlock>
+                        <StackPanel Orientation="Horizontal"
+                                    Visibility="{Binding InstallationCheckSuccessPanelVisibility}"
+                                    Margin="5">
+                            <Image Source="/flag_green.ico" />
+                            <TextBlock VerticalAlignment="Center">
+                                All good, ACC is installed and ready
+                            </TextBlock>
+                        </StackPanel>
+                        <StackPanel Orientation="Vertical"
+                                    Visibility="{Binding InstallationCheckFailPanelVisibility}"
+                                    Margin="5">
+                            <StackPanel Orientation="Horizontal">
+                                <Image Source="/flag_red.ico" />
+                                <TextBlock VerticalAlignment="Center">
+                                    ACC is not installed or has not bee run at least once.
+                                </TextBlock>
+                            </StackPanel>
+                            <TextBlock Margin="5"
+                                       TextWrapping="Wrap">
+                                GT3e Tools must be run on the computer you use for racing with Assetto Corsa
+                                Competizione.
+                                Please ensure GT3e Tools and ACC are installed on the same computer and make sure ACC
+                                has
+                                been run at least once.
+                            </TextBlock>
+                            <Button HorizontalAlignment="Right"
+                                    Command="{Binding RetryInstallationCheck}">
+                                Retry Check...
+                            </Button>
+                        </StackPanel>
+
+                    </StackPanel>
+                </Grid>
+            </sf:WizardPage>
+            <sf:WizardPage Name="broadcastingCheckPage"
+                           Title="Broadcasting Settings Check"
+                           Padding="0"
+                           Margin="0">
+                <Grid Margin="0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+
+                    <Image Source="/wizard-banner.png"
+                           Grid.Column="0"
+                           Margin="0" />
+                    <StackPanel Orientation="Vertical"
+                                Grid.Column="1"
+                                Margin="10">
+                        <TextBlock Margin="5"
+                                   TextWrapping="Wrap">
+                            We are now checking whether Assetto Corsa Competizione is configured for broadcasting,
+                            which
+                            GT3e Tools depends on.
+                        </TextBlock>
+                        <StackPanel Orientation="Horizontal"
+                                    Visibility="{Binding BroadcastingCheckSuccessPanelVisibility}"
+                                    Margin="5">
+                            <Image Source="/flag_green.ico" />
+                            <TextBlock VerticalAlignment="Center">
+                                <Run Text="All good, ACC is configured for broadcasting on port: " />
+                                <Run Text="{Binding BroadcastingPort}" />
+                            </TextBlock>
+                        </StackPanel>
+                        <StackPanel Orientation="Vertical"
+                                    Visibility="{Binding BroadcastingCheckFailPanelVisibility}"
+                                    Margin="5">
+                            <StackPanel Orientation="Horizontal">
+                                <Image Source="/flag_red.ico" />
+                                <TextBlock VerticalAlignment="Center">
+                                    ACC is not configured for broadcasting.
+                                </TextBlock>
+                            </StackPanel>
+                            <TextBlock Margin="5"
+                                       TextWrapping="Wrap">
+                                For GT3e Tools to work properly ACC must be configured with a network port to broadcast
+                                on.
+                                Passwords can also be set to protect access to the broadcasting port.  This is all
+                                configured in a text file called broadcasting.json within the Config folder of your
+                                personal ACC folder.  We can update these settings for you, simple check the box below
+                                and
+                                click Next.  On the next page we will prompt you for settings and update the file.
+                            </TextBlock>
+                            <CheckBox IsChecked="{Binding ChangeSettingsForMe, Mode=TwoWay}"
+                                      Visibility="{Binding ChangeSettingsForMeVisibility}">
+                                Enable Broadcasting For Me
+                            </CheckBox>
+                            <TextBlock Margin="5"
+                                       TextWrapping="Wrap"
+                                       Visibility="{Binding OpenBroadcastingFileVisibility}">
+                                If you are familiar with editing JSON files and prefer to edit the settings manually
+                                click
+                                the button below and we will open the file in Notepad.  When you have updated the file
+                                and
+                                saved the changes click the Retry Check button.
+                            </TextBlock>
+                            <Button HorizontalAlignment="Right"
+                                    Command="{Binding OpenBroadcastingFileCommand}"
+                                    Visibility="{Binding OpenBroadcastingFileVisibility}">
+                                Open Settings File
+                            </Button>
+                            <Button HorizontalAlignment="Right"
+                                    Command="{Binding RetryBroadcastingCheckCommand}"
+                                    Visibility="{Binding RetryBroadcastingCheckVisibility}">
+                                Retry Check...
+                            </Button>
+                        </StackPanel>
+
+                    </StackPanel>
+                </Grid>
+            </sf:WizardPage>
+            <sf:WizardPage Name="finalPage"
+                           Title="Broadcasting Settings Check"
+                           Padding="0"
+                           Margin="0">
+                <Grid Margin="0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+
+                    <Image Source="/wizard-banner.png"
+                           Grid.Column="0"
+                           Margin="0" />
+                    <StackPanel Orientation="Vertical"
+                                Grid.Column="1"
+                                Margin="10">
+                        <TextBlock Margin="5"
+                                   TextWrapping="Wrap"
+                                   Visibility="{Binding FinishedSummaryVisibility}">
+                            That is it, you are now ready to get started preparing with your verification session.
+                            Click Finish and we will guide you through the process.
+                        </TextBlock>
+                        <StackPanel Orientation="Vertical"
+                                    Visibility="{Binding BroadcastingSettingsVisibility}">
+                            <TextBlock Margin="5"
+                                       TextWrapping="Wrap">
+                                Enter the settings you want to use.  Listener Port can be between 9000 and 9990.
+                                Passwords are optional.  User Password is for simple connections to read data, if set
+                                this is what GT3e Tools will use.  Admin Password is for sending admin commands to ACC,
+                                GT3e Tools may use this if we add command capabilities.
+                            </TextBlock>
+                            <StackPanel Orientation="Horizontal"
+                                        Margin="5">
+                                <Label>Listener Port:</Label>
+                                <sf:UpDown Value="{Binding ListenerPort, Mode=TwoWay}"
+                                           MinValue="9000"
+                                           MaxValue="9999"
+                                           Step="1"
+                                           NumberDecimalDigits="0" />
+                            </StackPanel>
+
+                            <StackPanel Orientation="Horizontal"
+                                        Margin="5">
+                                <Label>User Password:</Label>
+                                <TextBox Text="{Binding ConnectionPassword, Mode=TwoWay}"
+                                         Width="150" />
+                            </StackPanel>
+
+                            <StackPanel Orientation="Horizontal"
+                                        Margin="5">
+                                <Label>Admin Password:</Label>
+                                <TextBox Text="{Binding CommandPassword, Mode=TwoWay}"
+                                         Width="150" />
+                            </StackPanel>
+                            <Button Command="{Binding SaveBroadcastingSettingsCommand}"
+                                    HorizontalAlignment="Left"
+                                    Height="20"
+                                    Width="75">
+                                Save
+                            </Button>
+                        </StackPanel>
+                    </StackPanel>
+                </Grid>
+            </sf:WizardPage>
+        </sf:WizardControl>
+    </Grid>
+</UserControl>

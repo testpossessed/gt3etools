@@ -19,11 +19,14 @@ public class MainViewModel : ObservableRecipient
     {
         // this.InitialiseFileWatcher();
         this.SetInitialTheme();
-        this.FirstTimeRun = new FirstTimeRunViewModel();
-        this.ProcessInitialisation();
+        this.Initialise();
     }
 
-    public FirstTimeRunViewModel FirstTimeRun { get; }
+    public ConsoleViewModel Console { get; } = new();
+
+    public FirstTimeRunViewModel FirstTimeRun { get; } = new();
+
+    public VerificationTestViewModel VerificationTest { get; } = new();
 
     public List<string> Themes { get; } = new()
     {
@@ -33,6 +36,7 @@ public class MainViewModel : ObservableRecipient
         "Office 365",
         "Saffron"
     };
+
     public Visibility FurnitureVisibility
     {
         get => this.furnitureVisibility;
@@ -53,6 +57,21 @@ public class MainViewModel : ObservableRecipient
     {
         get => this.statusMessage;
         set => this.SetProperty(ref this.statusMessage, value);
+    }
+
+    private void HandleFirstTimeRunFinished(object? sender, PropertyChangedEventArgs eventArgs)
+    {
+        if(eventArgs.PropertyName != nameof(this.FirstTimeRun.FirstTimeRunVisibility))
+        {
+            return;
+        }
+
+        var contentVisibility = this.FirstTimeRun.FirstTimeRunVisibility == Visibility.Visible
+                                    ? Visibility.Hidden
+                                    : Visibility.Visible;
+        this.FurnitureVisibility = contentVisibility;
+        this.Console.ConsoleVisibility = contentVisibility;
+        this.FirstTimeRun.PropertyChanged -= this.HandleFirstTimeRunFinished;
     }
 
     private void HandleThemeChanged()
@@ -86,20 +105,29 @@ public class MainViewModel : ObservableRecipient
         // this.fileWatcher.Changed += this.HandleSetupFileChanged;
     }
 
-    private void ProcessInitialisation()
+    private void Initialise()
     {
         var settings = SettingsProvider.GetSettings();
-        this.FirstTimeRun.FirstTimeRunVisibility =
-            settings.IsInitialised? Visibility.Hidden: Visibility.Visible;
-        this.FurnitureVisibility = settings.IsInitialised? Visibility.Visible: Visibility.Hidden;
-        this.FirstTimeRun.PropertyChanged += HandleFirstTimeRunFinished;
+        this.PrepareFirstTimeRun(settings);
+        this.PrepareVerificationTest(settings);
     }
 
-    private void HandleFirstTimeRunFinished(object? sender, PropertyChangedEventArgs eventArgs)
+    private void PrepareVerificationTest(UserSettings settings)
     {
-        if(eventArgs.PropertyName == nameof(FirstTimeRun.FirstTimeRunVisibility))
+        var isVerified = settings.IsInitialised && settings.IsVerified;
+
+        this.VerificationTest.VerificationTestVisibility = isVerified? Visibility.Hidden: Visibility.Visible;
+    }
+
+    private void PrepareFirstTimeRun(UserSettings settings)
+    {
+        this.FirstTimeRun.FirstTimeRunVisibility = settings.IsInitialised? Visibility.Hidden: Visibility.Visible;
+        var contentVisibility = settings.IsInitialised? Visibility.Visible: Visibility.Hidden;
+        this.FurnitureVisibility = contentVisibility;
+        this.Console.ConsoleVisibility = contentVisibility;
+        if(!settings.IsInitialised)
         {
-            this.FurnitureVisibility = FirstTimeRun.FirstTimeRunVisibility == Visibility.Visible ? Visibility.Hidden : Visibility.Visible;
+            this.FirstTimeRun.PropertyChanged += this.HandleFirstTimeRunFinished;
         }
     }
 
