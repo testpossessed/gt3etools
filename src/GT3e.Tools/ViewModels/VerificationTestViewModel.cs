@@ -11,14 +11,22 @@ namespace GT3e.Tools.ViewModels;
 
 public class VerificationTestViewModel : ObservableObject
 {
+    private bool isStartEnabled;
     private Visibility verificationTestVisibility;
 
     public VerificationTestViewModel()
     {
         this.StartCommand = new RelayCommand(this.HandleStartCommand);
+        this.IsStartEnabled = true;
     }
 
     public ICommand StartCommand { get; }
+
+    public bool IsStartEnabled
+    {
+        get => this.isStartEnabled;
+        set => this.SetProperty(ref this.isStartEnabled, value);
+    }
 
     public Visibility VerificationTestVisibility
     {
@@ -60,6 +68,7 @@ public class VerificationTestViewModel : ObservableObject
 
     private void HandleStartCommand()
     {
+        this.IsStartEnabled = false;
         var broadcastingSettings = AccConfigProvider.GetBroadcastingSettings()!;
         var accConnection = new AccConnection("localhost",
             broadcastingSettings.UpdListenerPort,
@@ -75,6 +84,8 @@ public class VerificationTestViewModel : ObservableObject
         accConnection.RealTimeUpdates.Subscribe(this.HandleRealTimeUpdates, this.HandleAccError);
         accConnection.RealTimeCarUpdates.Subscribe(this.HandleRealTimeCarUpdates, this.HandleAccError);
         accConnection.TrackDataUpdates.Subscribe(this.HandleTrackDataUpdates, this.HandleAccError);
+
+        ConsoleLog.Write("Connecting to ACC...");
 
         accConnection.Connect();
     }

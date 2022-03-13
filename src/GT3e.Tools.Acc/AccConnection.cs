@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using System.Net.NetworkInformation;
 using System.Net.Sockets;
 using GT3e.Tools.Acc.Data;
 
@@ -6,7 +7,7 @@ namespace GT3e.Tools.Acc;
 
 public class AccConnection
 {
-    private readonly Task listenerTask;
+    private Task listenerTask;
     private readonly AccMessageHandler messageHandler;
     private bool isDisposed;
     private UdpClient? udpClient;
@@ -26,9 +27,7 @@ public class AccConnection
         this.UpdateInterval = updateInterval;
         this.ConnectionIdentifier = $"{this.IpAddress}:{this.Port}";
 
-        this.udpClient = new UdpClient();
         this.messageHandler = new AccMessageHandler(this.ConnectionIdentifier, this.Send);
-        this.listenerTask = this.HandleMessages();
     }
 
     public string CommandPassword { get; }
@@ -58,10 +57,26 @@ public class AccConnection
         // GC.SuppressFinalize(this);
     }
 
-    public void Connect()
+    public async Task Connect()
     {
-        this.udpClient!.Connect(this.IpAddress, this.Port);
-        this.messageHandler.RequestConnection(this.DisplayName, this.ConnectionPassword, this.UpdateInterval, this.CommandPassword);
+        this.udpClient = new UdpClient();
+        this.udpClient.Connect(this.IpAddress, this.Port);
+
+        await this.WaitForPortToBeAvailable();
+
+        this.listenerTask = this.HandleMessages();
+    }
+
+    private async Task WaitForPortToBeAvailable()
+    {
+        var isConnected = false;
+        while(!isConnected)
+        {
+            isConnected = IPGlobalProperties.GetIPGlobalProperties()
+                                            .GetActiveUdpListeners()
+                                            .Any(p => p.Port == this.Port);
+            await Task.Delay(TimeSpan.FromSeconds(10));
+        }
     }
 
     public async Task ShutdownAsync()

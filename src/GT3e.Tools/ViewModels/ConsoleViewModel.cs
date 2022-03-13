@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Windows;
 using GT3e.Tools.Services;
 using Microsoft.Toolkit.Mvvm.ComponentModel;
@@ -32,11 +33,12 @@ public class ConsoleViewModel : ObservableObject
     private void HandleNewEntry(string entry)
     {
         this.messages.Add(entry);
-        if(this.messages.Count > 50)
+        if(this.messages.Count > 10)
         {
             this.messages.RemoveAt(0);
         }
 
-        this.consoleContent = string.Join(Environment.NewLine, this.messages);
+        this.ConsoleContent = string.Join(Environment.NewLine, this.messages);
+        Debug.WriteLine(entry);
     }
 }

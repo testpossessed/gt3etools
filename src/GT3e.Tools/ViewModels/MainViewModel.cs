@@ -71,6 +71,7 @@ public class MainViewModel : ObservableRecipient
                                     : Visibility.Visible;
         this.FurnitureVisibility = contentVisibility;
         this.Console.ConsoleVisibility = contentVisibility;
+        this.VerificationTest.VerificationTestVisibility = contentVisibility;
         this.FirstTimeRun.PropertyChanged -= this.HandleFirstTimeRunFinished;
     }
 
@@ -114,9 +115,13 @@ public class MainViewModel : ObservableRecipient
 
     private void PrepareVerificationTest(UserSettings settings)
     {
-        var isVerified = settings.IsInitialised && settings.IsVerified;
+        var visibility = Visibility.Hidden;
+        if(settings.IsInitialised && !settings.IsVerified)
+        {
+            visibility = visibility = Visibility.Visible;
+        }
 
-        this.VerificationTest.VerificationTestVisibility = isVerified? Visibility.Hidden: Visibility.Visible;
+        this.VerificationTest.VerificationTestVisibility = visibility;
     }
 
     private void PrepareFirstTimeRun(UserSettings settings)

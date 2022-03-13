@@ -129,7 +129,7 @@
         <TextBlock Grid.Row="10" Grid.ColumnSpan="2" Grid.Column="0">
             When you are ready to start you verification test, click Start below and we will start monitoring ACC.
         </TextBlock>
-        <Button Grid.Column="1" Grid.Row="11" HorizontalAlignment="Right" Padding="5" Command="{Binding StartCommand}">Start</Button>
+        <Button Grid.Column="1" Grid.Row="11" HorizontalAlignment="Right" Padding="5" Command="{Binding StartCommand}" IsEnabled="{Binding IsStartEnabled}">Start</Button>
 
     </Grid>
 

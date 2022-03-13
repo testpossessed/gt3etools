@@ -10,7 +10,7 @@ internal static class BinaryReaderExtensions
         return new BroadcastingEvent
         {
             BroadcastingEventType = (BroadcastingEventType) reader.ReadByte(),
-            Message = reader.ReadString(),
+            Message = reader.ReadStr(),
             TimeMs = reader.ReadInt32(),
             CarId = reader.ReadInt32()
         };
@@ -23,7 +23,7 @@ internal static class BinaryReaderExtensions
         return lap;
     }
 
-    internal static string ReadString(this BinaryReader binaryReader)
+    internal static string ReadStr(this BinaryReader binaryReader)
     {
         var length = binaryReader.ReadUInt16();
         var bytes = binaryReader.ReadBytes(length);
@@ -33,7 +33,7 @@ internal static class BinaryReaderExtensions
     internal static void UpdateCarInfo(this BinaryReader reader, CarInfo carInfo)
     {
         carInfo.CarModelType = reader.ReadByte();
-        carInfo.TeamName = reader.ReadString();
+        carInfo.TeamName = reader.ReadStr();
         carInfo.RaceNumber = reader.ReadInt32();
         carInfo.CupCategory = reader.ReadByte();
         carInfo.CurrentDriverIndex = reader.ReadByte();
@@ -44,9 +44,9 @@ internal static class BinaryReaderExtensions
         {
             var driverInfo = new DriverInfo
             {
-                FirstName = reader.ReadString(),
-                LastName = reader.ReadString(),
-                ShortName = reader.ReadString(),
+                FirstName = reader.ReadStr(),
+                LastName = reader.ReadStr(),
+                ShortName = reader.ReadStr(),
                 Category = (DriverCategory) reader.ReadByte(),
                 Nationality = (Nationality) reader.ReadUInt16()
             };
@@ -70,9 +70,9 @@ internal static class BinaryReaderExtensions
         realtimeUpdate.SessionEndTime = TimeSpan.FromMilliseconds(sessionEndTime);
 
         realtimeUpdate.FocusedCarIndex = reader.ReadInt32();
-        realtimeUpdate.ActiveCameraSet = reader.ReadString();
-        realtimeUpdate.ActiveCamera = reader.ReadString();
-        realtimeUpdate.CurrentHudPage = reader.ReadString();
+        realtimeUpdate.ActiveCameraSet = reader.ReadStr();
+        realtimeUpdate.ActiveCamera = reader.ReadStr();
+        realtimeUpdate.CurrentHudPage = reader.ReadStr();
 
         realtimeUpdate.IsReplayPlaying = reader.ReadByte() > 0;
         if(realtimeUpdate.IsReplayPlaying)
@@ -124,7 +124,7 @@ internal static class BinaryReaderExtensions
         var update = new TrackDataUpdate
         {
             ConnectionIdentifier = connectionIdentifier,
-            TrackName = reader.ReadString(),
+            TrackName = reader.ReadStr(),
             TrackId = reader.ReadInt32(),
             TrackMeters = reader.ReadInt32(),
             CameraSets = new Dictionary<string, List<string>>()
@@ -133,13 +133,13 @@ internal static class BinaryReaderExtensions
         var cameraSetCount = reader.ReadByte();
         for(var camSet = 0; camSet < cameraSetCount; camSet++)
         {
-            var camSetName = reader.ReadString();
+            var camSetName = reader.ReadStr();
             update.CameraSets.Add(camSetName, new List<string>());
 
             var cameraCount = reader.ReadByte();
             for(var cam = 0; cam < cameraCount; cam++)
             {
-                var cameraName = reader.ReadString();
+                var cameraName = reader.ReadStr();
                 update.CameraSets[camSetName]
                          .Add(cameraName);
             }
@@ -149,7 +149,7 @@ internal static class BinaryReaderExtensions
         var hudPagesCount = reader.ReadByte();
         for(var i = 0; i < hudPagesCount; i++)
         {
-            hudPages.Add(reader.ReadString());
+            hudPages.Add(reader.ReadStr());
         }
 
         update.HudPages = hudPages;
