@@ -135,10 +135,11 @@
         </TextBlock>
         <TextBlock Grid.Row="10"
                    Grid.ColumnSpan="2"
-                   Grid.Column="0">
+                   Grid.Column="0"
+                   TextWrapping="Wrap">
             When you are ready to start you verification test, enter your Steam ID below and click Start. We will start
             monitoring ACC. When
-            you have finished the race be sure to go into the Replay and save it.  We will validate the session and
+            you have finished the race BE SURE to go into the Replay and SAVE it.  We will validate the session and
             automatically upload files for verification using your Steam Id as your GT3e identity.
         </TextBlock>
         <StackPanel Grid.Column="1"

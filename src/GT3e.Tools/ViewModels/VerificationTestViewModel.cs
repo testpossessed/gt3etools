@@ -163,6 +163,8 @@ public class VerificationTestViewModel : ObservableObject
                        .GetResult();
 
         this.UpdateUserSettings();
+
+        this.VerificationTestVisibility = Visibility.Hidden;
     }
 
     private void UpdateUserSettings()
