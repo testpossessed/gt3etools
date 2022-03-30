@@ -213,7 +213,7 @@ public class VerificationTestViewModel : ObservableObject
         LogWriter.Info("Verifying settings");
         ConsoleLog.Write("Verifying settings...");
 
-        if(settings!.SessionGameplay.AggroMultiplier >= 90 && settings.SessionGameplay.SkillMultiplier >= 90 && settings.Events[0].TrackName == "silverstone")
+        if(settings!.SessionGameplay.AggroMultiplier >= 90 && settings.SessionGameplay.SkillMultiplier >= 90 && settings.Events[0].TrackName.ToLowerInvariant() == "zolder")
         {
             return true;
         }
