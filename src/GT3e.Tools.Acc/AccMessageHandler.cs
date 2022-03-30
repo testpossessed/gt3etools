@@ -1,7 +1,7 @@
 ﻿using System.Diagnostics;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
-using GT3e.Tools.Acc.Data;
+using GT3e.Tools.Acc.Messages;
 
 namespace GT3e.Tools.Acc;
 

@@ -15,10 +15,16 @@
     <None Remove="flag_red.bmp" />
     <None Remove="flag_red.ico" />
     <None Remove="splash.png" />
+    <None Remove="SystemSettings.json" />
     <None Remove="wizard-banner.png" />
   </ItemGroup>
 
   <ItemGroup>
+    <EmbeddedResource Include="SystemSettings.json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Azure.Storage.Blobs" Version="12.11.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration" Version="6.0.1" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="6.0.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="6.0.1" />

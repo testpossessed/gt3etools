@@ -1,7 +1,7 @@
 ﻿using System.Diagnostics;
 using System.Net.NetworkInformation;
 using System.Net.Sockets;
-using GT3e.Tools.Acc.Data;
+using GT3e.Tools.Acc.Messages;
 
 namespace GT3e.Tools.Acc;
 
@@ -101,7 +101,7 @@ public class AccConnection
         {
             try
             {
-                if(this.udpClient != null)
+                if (this.udpClient != null)
                 {
                     this.udpClient.Close();
                     this.udpClient.Dispose();

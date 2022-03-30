@@ -50,11 +50,14 @@
                    DataContext="{Binding Console}" />
 
         <Grid>
-        <v:FirstRunWizard Visibility="{Binding FirstTimeRunVisibility}"
-                          DataContext="{Binding FirstTimeRun}" />
+            <v:FirstRunWizard Visibility="{Binding FirstTimeRunVisibility}"
+                              DataContext="{Binding FirstTimeRun}" />
 
-        <v:VerificationTest Visibility="{Binding VerificationTestVisibility}"
-                            DataContext="{Binding VerificationTest}" />
+            <v:VerificationTest Visibility="{Binding VerificationTestVisibility}"
+                                DataContext="{Binding VerificationTest}" />
+
+            <v:VerificationPending Visibility="{Binding VerificationPendingVisibility}"
+                                   DataContext="{Binding VerificationPending}" />
         </Grid>
     </DockPanel>
 </sf:ChromelessWindow>

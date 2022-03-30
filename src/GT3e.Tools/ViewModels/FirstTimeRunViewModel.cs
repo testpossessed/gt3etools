@@ -3,6 +3,8 @@ using System.Diagnostics;
 using System.IO;
 using System.Windows;
 using System.Windows.Input;
+using GT3e.Tools.Acc.Models;
+using GT3e.Tools.Acc.Models.Config;
 using GT3e.Tools.Models;
 using GT3e.Tools.Services;
 using Microsoft.Toolkit.Mvvm.ComponentModel;
@@ -181,7 +183,7 @@ public class FirstTimeRunViewModel : ObservableObject
 
     private void HandleFinish()
     {
-        var userSettings = SettingsProvider.GetSettings();
+        var userSettings = SettingsProvider.GetUserSettings();
         userSettings.IsInitialised = true;
         SettingsProvider.SaveSettings(userSettings);
         this.FirstTimeRunVisibility = Visibility.Hidden;

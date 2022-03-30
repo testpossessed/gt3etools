@@ -1,8 +1,10 @@
 ﻿using System;
+using System.IO;
+using System.Reactive.Disposables;
 using System.Windows;
 using System.Windows.Input;
 using GT3e.Tools.Acc;
-using GT3e.Tools.Acc.Data;
+using GT3e.Tools.Acc.Messages;
 using GT3e.Tools.Services;
 using Microsoft.Toolkit.Mvvm.ComponentModel;
 using Microsoft.Toolkit.Mvvm.Input;
@@ -11,21 +13,47 @@ namespace GT3e.Tools.ViewModels;
 
 public class VerificationTestViewModel : ObservableObject
 {
+    private readonly CompositeDisposable subscriptionSink = new();
+    private AccConnection accConnection = null!;
+    private FileSystemWatcher fileSystemWatcher = null!;
+    private bool isCancelEnabled;
     private bool isStartEnabled;
+    private string replayFilePath;
+    private string resultFilePath;
+    private string steamId;
     private Visibility verificationTestVisibility;
 
     public VerificationTestViewModel()
     {
         this.StartCommand = new RelayCommand(this.HandleStartCommand);
-        this.IsStartEnabled = true;
+        this.CancelCommand = new RelayCommand(this.HandleCancelCommand);
+        this.IsStartEnabled = false;
+        this.IsCancelEnabled = false;
+        this.SteamId = string.Empty;
     }
 
+    public ICommand CancelCommand { get; }
+
     public ICommand StartCommand { get; }
+    public bool IsCancelEnabled
+    {
+        get => this.isCancelEnabled;
+        set => this.SetProperty(ref this.isCancelEnabled, value);
+    }
 
     public bool IsStartEnabled
     {
         get => this.isStartEnabled;
         set => this.SetProperty(ref this.isStartEnabled, value);
+    }
+    public string SteamId
+    {
+        get => this.steamId;
+        set
+        {
+            this.IsStartEnabled = !string.IsNullOrWhiteSpace(value);
+            this.SetProperty(ref this.steamId, value);
+        }
     }
 
     public Visibility VerificationTestVisibility
@@ -34,62 +62,184 @@ public class VerificationTestViewModel : ObservableObject
         set => this.SetProperty(ref this.verificationTestVisibility, value);
     }
 
-    private void HandleAccError(Exception exception)
+    private void Connect()
     {
-        ConsoleLog.Write($"ERROR: {exception.Message}");
-    }
-
-    private void HandleBroadcastingEvents(BroadcastingEvent message)
-    {
-        ConsoleLog.Write(message.ToString());
-    }
-
-    private void HandleConnectionStatusUpdates(ConnectionState message)
-    {
-        ConsoleLog.Write(message.ToString()!);
-    }
-
-    private void HandleEntryListUpdates(EntryListUpdate message)
-    {
-        ConsoleLog.Write(message.ToString()!);
-    }
-
-    private void HandleRealTimeCarUpdates(RealtimeCarUpdate message)
-    {
-        ConsoleLog.Write(message.ToString());
-    }
-
-    private void HandleRealTimeUpdates(RealtimeUpdate message)
-    {
-        ConsoleLog.Write($"Real Time Update: Session Type: {message.SessionType}");
-    }
-
-    private void HandleStartCommand()
-    {
-        this.IsStartEnabled = false;
         var broadcastingSettings = AccConfigProvider.GetBroadcastingSettings()!;
-        var accConnection = new AccConnection("localhost",
+        this.accConnection = new AccConnection("localhost",
             broadcastingSettings.UpdListenerPort,
             "Verification Test",
             broadcastingSettings.ConnectionPassword,
             broadcastingSettings.ConnectionPassword,
             60);
 
-        accConnection.BroadcastingEvents.Subscribe(this.HandleBroadcastingEvents, this.HandleAccError);
-        accConnection.ConnectionStateChanges.Subscribe(this.HandleConnectionStatusUpdates,
-            this.HandleAccError);
-        accConnection.EntryListUpdates.Subscribe(this.HandleEntryListUpdates, this.HandleAccError);
-        accConnection.RealTimeUpdates.Subscribe(this.HandleRealTimeUpdates, this.HandleAccError);
-        accConnection.RealTimeCarUpdates.Subscribe(this.HandleRealTimeCarUpdates, this.HandleAccError);
-        accConnection.TrackDataUpdates.Subscribe(this.HandleTrackDataUpdates, this.HandleAccError);
+        this.subscriptionSink.Add(
+            this.accConnection.BroadcastingEvents.Subscribe(this.HandleBroadcastingEvents,
+                this.HandleAccError));
+        this.subscriptionSink.Add(
+            this.accConnection.ConnectionStateChanges.Subscribe(this.HandleConnectionStatusUpdates,
+                this.HandleAccError));
+        this.subscriptionSink.Add(
+            this.accConnection.EntryListUpdates.Subscribe(this.HandleEntryListUpdates, this.HandleAccError));
+        this.subscriptionSink.Add(
+            this.accConnection.RealTimeUpdates.Subscribe(this.HandleRealTimeUpdates, this.HandleAccError));
+        this.subscriptionSink.Add(
+            this.accConnection.RealTimeCarUpdates.Subscribe(this.HandleRealTimeCarUpdates,
+                this.HandleAccError));
+        this.subscriptionSink.Add(
+            this.accConnection.TrackDataUpdates.Subscribe(this.HandleTrackDataUpdates, this.HandleAccError));
 
+        LogWriter.Info("Connection to ACC");
         ConsoleLog.Write("Connecting to ACC...");
 
-        accConnection.Connect();
+        this.accConnection.Connect();
     }
 
-    private void HandleTrackDataUpdates(TrackDataUpdate update)
+    private void HandleAccError(Exception exception)
     {
-        ConsoleLog.Write($"Track Data Update: Track Name: {update.TrackName}");
+        LogWriter.Error(exception, "ACC Connection Error");
+        ConsoleLog.Write($"ERROR: {exception.Message}");
+    }
+
+    private void HandleBroadcastingEvents(BroadcastingEvent message)
+    {
+        LogWriter.Info(message.ToString());
+    }
+
+    private void HandleCancelCommand()
+    {
+        LogWriter.Info("Closing connection to ACC");
+        ConsoleLog.Write("Closing connection to ACC...");
+
+        this.subscriptionSink.Dispose();
+        this.accConnection.ShutdownAsync()
+            .GetAwaiter()
+            .GetResult();
+        this.accConnection.Dispose();
+
+        ConsoleLog.Write("Finished");
+    }
+
+    private void HandleConnectionStatusUpdates(ConnectionState message)
+    {
+        LogWriter.Info(message.ToString());
+        if(!message.IsConnected)
+        {
+            return;
+        }
+
+        ConsoleLog.Write("Connected to ACC...");
+        this.WaitForResultsFile();
+    }
+
+    private void HandleEntryListUpdates(EntryListUpdate message)
+    {
+        LogWriter.Info(message.ToString());
+    }
+
+    private void HandleRealTimeCarUpdates(RealtimeCarUpdate message)
+    {
+        LogWriter.Info(message.ToString());
+    }
+
+    private void HandleRealTimeUpdates(RealtimeUpdate message)
+    {
+        LogWriter.Info(message.ToString());
+    }
+
+    private void HandleReplayFileCreated(object sender, FileSystemEventArgs eventArgs)
+    {
+        this.replayFilePath = eventArgs.FullPath;
+        var message = $"Replay file detected: {this.replayFilePath}";
+        LogWriter.Info(message);
+        ConsoleLog.Write(message);
+
+        this.fileSystemWatcher.EnableRaisingEvents = false;
+        this.fileSystemWatcher.Created -= this.HandleReplayFileCreated;
+        this.fileSystemWatcher.Dispose();
+        this.fileSystemWatcher = null!;
+
+        StorageProvider.UploadVerificationFiles(this.SteamId, this.resultFilePath, this.replayFilePath)
+                       .GetAwaiter()
+                       .GetResult();
+
+        this.UpdateUserSettings();
+    }
+
+    private void UpdateUserSettings()
+    {
+        var userSettings = SettingsProvider.GetUserSettings();
+        userSettings.IsVerificationPending = true;
+        userSettings.SteamId = this.SteamId;
+        SettingsProvider.SaveSettings(userSettings);
+    }
+
+    private void HandleResultsFileDetected(object sender, FileSystemEventArgs eventArgs)
+    {
+        this.resultFilePath = eventArgs.FullPath;
+        var message = $"Results file detected: {this.resultFilePath}";
+        LogWriter.Info(message);
+        ConsoleLog.Write(message);
+
+        this.fileSystemWatcher.EnableRaisingEvents = false;
+        this.fileSystemWatcher.Created -= this.HandleResultsFileDetected;
+        this.fileSystemWatcher.Dispose();
+        this.fileSystemWatcher = null!;
+
+        if(!this.ValidateSessionSettings())
+        {
+            this.IsStartEnabled = true;
+            this.IsCancelEnabled = false;
+            return;
+        }
+
+        this.WaitForReplayFile();
+    }
+
+    private void HandleStartCommand()
+    {
+        this.IsStartEnabled = false;
+        this.IsCancelEnabled = true;
+        this.Connect();
+    }
+
+    private void HandleTrackDataUpdates(TrackDataUpdate message)
+    {
+        LogWriter.Info(message.ToString());
+    }
+
+    private bool ValidateSessionSettings()
+    {
+        var settings = AccConfigProvider.GetSeasonSettings();
+        LogWriter.Info("Verifying settings");
+        ConsoleLog.Write("Verifying settings...");
+
+        if(settings!.SessionGameplay.AggroMultiplier >= 90 && settings.SessionGameplay.SkillMultiplier >= 90 && settings.Events[0].TrackName == "silverstone")
+        {
+            return true;
+        }
+
+        LogWriter.Info("Invalid session settings");
+        ConsoleLog.Write(
+            "The gameplay settings are not valid for the test session. Please make sure you have configured the session and track correctly and try again.");
+        return false;
+    }
+
+    private void WaitForReplayFile()
+    {
+        LogWriter.Info("Waiting for replay file");
+        ConsoleLog.Write("Waiting for replay file...");
+        this.fileSystemWatcher = new FileSystemWatcher(PathProvider.AccSavedReplaysFolderPath, "*.rpy");
+        this.fileSystemWatcher.Changed += this.HandleReplayFileCreated;
+        this.fileSystemWatcher.EnableRaisingEvents = true;
+    }
+
+    private void WaitForResultsFile()
+    {
+        LogWriter.Info("Waiting for session results file");
+        ConsoleLog.Write("Waiting for session results file...");
+        this.fileSystemWatcher = new FileSystemWatcher(PathProvider.AccResultFolderPath, "Race.json");
+        this.fileSystemWatcher.Changed += this.HandleResultsFileDetected;
+        this.fileSystemWatcher.Created += this.HandleResultsFileDetected;
+        this.fileSystemWatcher.EnableRaisingEvents = true;
     }
 }

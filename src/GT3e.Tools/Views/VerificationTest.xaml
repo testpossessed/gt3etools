@@ -11,7 +11,8 @@
              MaxWidth="800"
              VerticalAlignment="Stretch"
              HorizontalAlignment="Stretch">
-    <Grid HorizontalAlignment="Center" VerticalAlignment="Top">
+    <Grid HorizontalAlignment="Center"
+          VerticalAlignment="Top">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="Auto" />
             <ColumnDefinition Width="*" />
@@ -32,7 +33,11 @@
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
-        <Label Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="0">Verification Test</Label>
+        <Label Grid.Column="0"
+               Grid.ColumnSpan="2"
+               Grid.Row="0">
+            Verification Test
+        </Label>
         <TextBlock Grid.Column="0"
                    Grid.ColumnSpan="2"
                    Grid.Row="1"
@@ -46,10 +51,11 @@
                    Grid.ColumnSpan="2"
                    Grid.Row="2"
                    TextWrapping="Wrap">
-            You must complete a Single Player/ Quick Race session with the following settings at Silverstone in any GT3
+            You must complete a Single Player/ Quick Race session with the following settings at Silverstone in
+            any GT3
             car.  You must race cleanly and safely working your way up the field as far as you can.  Your result and
             lap times are
-            important as they will be used to determine which division you start your GT3e career in, but of most
+            important as they will be used to determine where you start your GT3e career, but of most
             importance is how you race.  At GT3e.com we only want to race against clean, fair and safe drivers so drive
             good lines, keep it on the black stuff and use good race tactics to pass your competitors cleanly without
             contact.
@@ -68,7 +74,7 @@
         <Label Grid.Column="0"
                Grid.Row="4"
                VerticalAlignment="Center">
-            Race Length
+            RaceSession Length
         </Label>
         <TextBlock Grid.Column="1"
                    Grid.Row="4"
@@ -123,13 +129,38 @@
             Opponent Agressiveness
         </Label>
         <TextBlock Grid.Column="1"
-                   Grid.Row="9" VerticalAlignment="Center">
+                   Grid.Row="9"
+                   VerticalAlignment="Center">
             90
         </TextBlock>
-        <TextBlock Grid.Row="10" Grid.ColumnSpan="2" Grid.Column="0">
-            When you are ready to start you verification test, click Start below and we will start monitoring ACC.
+        <TextBlock Grid.Row="10"
+                   Grid.ColumnSpan="2"
+                   Grid.Column="0">
+            When you are ready to start you verification test, enter your Steam ID below and click Start. We will start
+            monitoring ACC. When
+            you have finished the race be sure to go into the Replay and save it.  We will validate the session and
+            automatically upload files for verification using your Steam Id as your GT3e identity.
         </TextBlock>
-        <Button Grid.Column="1" Grid.Row="11" HorizontalAlignment="Right" Padding="5" Command="{Binding StartCommand}" IsEnabled="{Binding IsStartEnabled}">Start</Button>
+        <StackPanel Grid.Column="1"
+                    Grid.Row="11"
+                    Orientation="Horizontal"
+                    HorizontalAlignment="Right">
+            <Label>Steam ID</Label>
+            <TextBox Text="{Binding SteamId, Mode=TwoWay}"
+                     Width="150"
+                     Margin="1,1,10,1" />
+            <Button Padding="5"
+                    Command="{Binding StartCommand}"
+                    IsEnabled="{Binding IsStartEnabled}"
+                    Margin="1,1,10,1">
+                Start
+            </Button>
+            <Button Padding="5"
+                    Command="{Binding CancelCommand}"
+                    IsEnabled="{Binding IsCancelEnabled}">
+                Cancel
+            </Button>
+        </StackPanel>
 
     </Grid>
 

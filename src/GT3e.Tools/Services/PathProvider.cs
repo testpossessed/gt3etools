@@ -7,11 +7,15 @@ namespace GT3e.Tools.Services;
 public static class PathProvider
 {
     private const string AccFolderName = "Assetto Corsa Competizione";
-    private const string AccSetupsFolderName = "Setups";
     private const string AccConfigFolderName = "Config";
+    private const string AccResultsFolderName = "Results";
+    private const string AccSetupsFolderName = "Setups";
     public const string AppSettingsFileName = "appsettings.json";
     private const string UserSettingsFileName = "userSettings.json";
     private const string BroadcastingSettingsFileName = "broadcasting.json";
+    private const string SeasonSettingsFileName = "seasonEntity.json";
+    private const string AccReplaysFolderName = "Replay";
+    private const string AccReplaySavedFolderName = "Saved";
 
     static PathProvider()
     {
@@ -22,23 +26,32 @@ public static class PathProvider
         AppDataFolderPath = Path.Combine(localAppDataFolderPath, processName);
         AppSettingsFilePath = Path.Combine(AppDataFolderPath, AppSettingsFileName);
         var executionFolder = AppDomain.CurrentDomain.BaseDirectory;
-        AppFolderPath = Path.GetDirectoryName(executionFolder);
+        AppFolderPath = Path.GetDirectoryName(executionFolder)!;
         DefaultSettingsFilePath = Path.Combine(AppFolderPath!, AppSettingsFileName);
         var myDocumentsFolderPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
         AccSetupsFolderPath = Path.Combine(myDocumentsFolderPath, AccFolderName, AccSetupsFolderName);
         UserSettingsFilePath = Path.Combine(AppDataFolderPath, UserSettingsFileName);
         AccConfigFolderPath = Path.Combine(myDocumentsFolderPath, AccFolderName, AccConfigFolderName);
         AccBroadcastingSettingsFilePath = Path.Combine(AccConfigFolderPath, BroadcastingSettingsFileName);
+        AccSeasonSettingsFilePath = Path.Combine(myDocumentsFolderPath, AccConfigFolderPath, SeasonSettingsFileName);
+        AccResultFolderPath = Path.Combine(myDocumentsFolderPath, AccFolderName, AccResultsFolderName);
+        AccSavedReplaysFolderPath = Path.Combine(myDocumentsFolderPath,
+            AccFolderName,
+            AccReplaysFolderName,
+            AccReplaySavedFolderName);
     }
 
+    public static string AccBroadcastingSettingsFilePath { get; }
     public static string AccConfigFolderPath { get; }
     public static string AccSetupsFolderPath { get; }
     public static string AppDataFolderPath { get; }
     public static string AppFolderPath { get; }
     public static string AppSettingsFilePath { get; }
-    public static string AccBroadcastingSettingsFilePath { get; }
     public static string DefaultSettingsFilePath { get; }
     public static string UserSettingsFilePath { get; }
+    public static string AccResultFolderPath { get; set; }
+    public static string AccSavedReplaysFolderPath { get; set; }
+    public static string AccSeasonSettingsFilePath { get; set; }
 
     public static string GetLastFolderName(string path)
     {

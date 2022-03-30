@@ -17,7 +17,6 @@ public class MainViewModel : ObservableRecipient
 
     public MainViewModel()
     {
-        // this.InitialiseFileWatcher();
         this.SetInitialTheme();
         this.Initialise();
     }
@@ -25,8 +24,6 @@ public class MainViewModel : ObservableRecipient
     public ConsoleViewModel Console { get; } = new();
 
     public FirstTimeRunViewModel FirstTimeRun { get; } = new();
-
-    public VerificationTestViewModel VerificationTest { get; } = new();
 
     public List<string> Themes { get; } = new()
     {
@@ -36,6 +33,10 @@ public class MainViewModel : ObservableRecipient
         "Office 365",
         "Saffron"
     };
+
+    public VerificationPendingViewModel VerificationPending { get; } = new();
+
+    public VerificationTestViewModel VerificationTest { get; } = new();
 
     public Visibility FurnitureVisibility
     {
@@ -94,39 +95,31 @@ public class MainViewModel : ObservableRecipient
         }
     }
 
-    private void InitialiseFileWatcher()
+    private void HandleVerificationTestFinished(object? sender, PropertyChangedEventArgs eventArgs)
     {
-        // this.fileWatcher = new FileSystemWatcher(PathProvider.AccSetupsFolderPath, "*.json")
-        //                    {
-        //                      IncludeSubdirectories = true,
-        //                      EnableRaisingEvents = true
-        //                    };
-        // this.fileWatcher.Created += this.HandleSetupFileCreated;
-        // this.fileWatcher.Deleted += this.HandleSetupFileDeleted;
-        // this.fileWatcher.Changed += this.HandleSetupFileChanged;
+        if(eventArgs.PropertyName != nameof(this.VerificationTest.VerificationTestVisibility))
+        {
+            return;
+        }
+
+        var contentVisibility = this.VerificationTest.VerificationTestVisibility == Visibility.Visible
+                                    ? Visibility.Hidden
+                                    : Visibility.Visible;
+        this.VerificationPending.VerificationPendingVisibility = contentVisibility;
     }
 
     private void Initialise()
     {
-        var settings = SettingsProvider.GetSettings();
+        var settings = SettingsProvider.GetUserSettings();
         this.PrepareFirstTimeRun(settings);
         this.PrepareVerificationTest(settings);
-    }
-
-    private void PrepareVerificationTest(UserSettings settings)
-    {
-        var visibility = Visibility.Hidden;
-        if(settings.IsInitialised && !settings.IsVerified)
-        {
-            visibility = visibility = Visibility.Visible;
-        }
-
-        this.VerificationTest.VerificationTestVisibility = visibility;
+        this.PrepareVerificationPending(settings);
     }
 
     private void PrepareFirstTimeRun(UserSettings settings)
     {
-        this.FirstTimeRun.FirstTimeRunVisibility = settings.IsInitialised? Visibility.Hidden: Visibility.Visible;
+        this.FirstTimeRun.FirstTimeRunVisibility =
+            settings.IsInitialised? Visibility.Hidden: Visibility.Visible;
         var contentVisibility = settings.IsInitialised? Visibility.Visible: Visibility.Hidden;
         this.FurnitureVisibility = contentVisibility;
         this.Console.ConsoleVisibility = contentVisibility;
@@ -136,9 +129,34 @@ public class MainViewModel : ObservableRecipient
         }
     }
 
+    private void PrepareVerificationPending(UserSettings settings)
+    {
+        var visibility = Visibility.Hidden;
+        if(settings.IsInitialised && !settings.IsVerified && settings.IsVerificationPending)
+        {
+            visibility = Visibility.Visible;
+        }
+
+        this.VerificationPending.VerificationPendingVisibility = visibility;
+    }
+
+    private void PrepareVerificationTest(UserSettings settings)
+    {
+        var visibility = Visibility.Hidden;
+        var showVerificationTest =
+            settings.IsInitialised && !settings.IsVerified && !settings.IsVerificationPending;
+        if(showVerificationTest)
+        {
+            visibility = Visibility.Visible;
+            this.VerificationTest.PropertyChanged += this.HandleVerificationTestFinished;
+        }
+
+        this.VerificationTest.VerificationTestVisibility = visibility;
+    }
+
     private void SetInitialTheme()
     {
-        var settings = SettingsProvider.GetSettings();
+        var settings = SettingsProvider.GetUserSettings();
         this.selectedTheme = settings.Theme;
         SfSkinManager.SetTheme(Application.Current.MainWindow,
             new Theme(this.SelectedTheme.Replace(" ", "")));
