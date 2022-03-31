@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Threading;
+using System.Threading.Tasks;
 using Azure.Storage.Blobs;
 
 namespace GT3e.Tools.Services;
@@ -15,9 +16,9 @@ internal class StorageProvider
         await blobContainerClient.CreateIfNotExistsAsync();
 
         var blobClient = blobContainerClient.GetBlobClient($"{steamId}-results.json");
-        await blobClient.UploadAsync(resultsFilePath);
+        await blobClient.UploadAsync(resultsFilePath, true, CancellationToken.None);
 
         var replayBlobClient = blobContainerClient.GetBlobClient($"{steamId}-replay-rpy");
-        await replayBlobClient.UploadAsync(replayFilePath);
+        await replayBlobClient.UploadAsync(replayFilePath, true, CancellationToken.None);
     }
 }

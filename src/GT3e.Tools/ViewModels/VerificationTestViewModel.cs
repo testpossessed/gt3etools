@@ -13,8 +13,6 @@ namespace GT3e.Tools.ViewModels;
 
 public class VerificationTestViewModel : ObservableObject
 {
-    private readonly CompositeDisposable subscriptionSink = new();
-    private AccConnection accConnection = null!;
     private FileSystemWatcher fileSystemWatcher = null!;
     private bool isCancelEnabled;
     private bool isStartEnabled;
@@ -29,7 +27,9 @@ public class VerificationTestViewModel : ObservableObject
         this.CancelCommand = new RelayCommand(this.HandleCancelCommand);
         this.IsStartEnabled = false;
         this.IsCancelEnabled = false;
-        this.SteamId = string.Empty;
+
+        var userSettings = SettingsProvider.GetUserSettings();
+        this.SteamId = userSettings.SteamId;
     }
 
     public ICommand CancelCommand { get; }
@@ -62,88 +62,16 @@ public class VerificationTestViewModel : ObservableObject
         set => this.SetProperty(ref this.verificationTestVisibility, value);
     }
 
-    private void Connect()
-    {
-        var broadcastingSettings = AccConfigProvider.GetBroadcastingSettings()!;
-        this.accConnection = new AccConnection("localhost",
-            broadcastingSettings.UpdListenerPort,
-            "Verification Test",
-            broadcastingSettings.ConnectionPassword,
-            broadcastingSettings.ConnectionPassword,
-            60);
-
-        this.subscriptionSink.Add(
-            this.accConnection.BroadcastingEvents.Subscribe(this.HandleBroadcastingEvents,
-                this.HandleAccError));
-        this.subscriptionSink.Add(
-            this.accConnection.ConnectionStateChanges.Subscribe(this.HandleConnectionStatusUpdates,
-                this.HandleAccError));
-        this.subscriptionSink.Add(
-            this.accConnection.EntryListUpdates.Subscribe(this.HandleEntryListUpdates, this.HandleAccError));
-        this.subscriptionSink.Add(
-            this.accConnection.RealTimeUpdates.Subscribe(this.HandleRealTimeUpdates, this.HandleAccError));
-        this.subscriptionSink.Add(
-            this.accConnection.RealTimeCarUpdates.Subscribe(this.HandleRealTimeCarUpdates,
-                this.HandleAccError));
-        this.subscriptionSink.Add(
-            this.accConnection.TrackDataUpdates.Subscribe(this.HandleTrackDataUpdates, this.HandleAccError));
-
-        LogWriter.Info("Connection to ACC");
-        ConsoleLog.Write("Connecting to ACC...");
-
-        this.accConnection.Connect();
-    }
-
-    private void HandleAccError(Exception exception)
-    {
-        LogWriter.Error(exception, "ACC Connection Error");
-        ConsoleLog.Write($"ERROR: {exception.Message}");
-    }
-
-    private void HandleBroadcastingEvents(BroadcastingEvent message)
-    {
-        LogWriter.Info(message.ToString());
-    }
-
     private void HandleCancelCommand()
     {
-        LogWriter.Info("Closing connection to ACC");
-        ConsoleLog.Write("Closing connection to ACC...");
+        var message = "Cancelling Verification Test";
+        LogWriter.Info(message);
+        ConsoleLog.Write($"{message}...");
 
-        this.subscriptionSink.Dispose();
-        this.accConnection.ShutdownAsync()
-            .GetAwaiter()
-            .GetResult();
-        this.accConnection.Dispose();
-
+        this.fileSystemWatcher.EnableRaisingEvents = false;
+        this.fileSystemWatcher.Dispose();
+        this.fileSystemWatcher = null;
         ConsoleLog.Write("Finished");
-    }
-
-    private void HandleConnectionStatusUpdates(ConnectionState message)
-    {
-        LogWriter.Info(message.ToString());
-        if(!message.IsConnected)
-        {
-            return;
-        }
-
-        ConsoleLog.Write("Connected to ACC...");
-        this.WaitForResultsFile();
-    }
-
-    private void HandleEntryListUpdates(EntryListUpdate message)
-    {
-        LogWriter.Info(message.ToString());
-    }
-
-    private void HandleRealTimeCarUpdates(RealtimeCarUpdate message)
-    {
-        LogWriter.Info(message.ToString());
-    }
-
-    private void HandleRealTimeUpdates(RealtimeUpdate message)
-    {
-        LogWriter.Info(message.ToString());
     }
 
     private void HandleReplayFileCreated(object sender, FileSystemEventArgs eventArgs)
@@ -158,11 +86,11 @@ public class VerificationTestViewModel : ObservableObject
         this.fileSystemWatcher.Dispose();
         this.fileSystemWatcher = null!;
 
+        this.UpdateUserSettings();
+
         StorageProvider.UploadVerificationFiles(this.SteamId, this.resultFilePath, this.replayFilePath)
                        .GetAwaiter()
                        .GetResult();
-
-        this.UpdateUserSettings();
 
         this.VerificationTestVisibility = Visibility.Hidden;
     }
@@ -201,12 +129,7 @@ public class VerificationTestViewModel : ObservableObject
     {
         this.IsStartEnabled = false;
         this.IsCancelEnabled = true;
-        this.Connect();
-    }
-
-    private void HandleTrackDataUpdates(TrackDataUpdate message)
-    {
-        LogWriter.Info(message.ToString());
+        this.WaitForResultsFile();
     }
 
     private bool ValidateSessionSettings()

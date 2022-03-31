@@ -147,7 +147,7 @@
                     Orientation="Horizontal"
                     HorizontalAlignment="Right">
             <Label>Steam ID</Label>
-            <TextBox Text="{Binding SteamId, Mode=TwoWay}"
+            <TextBox Text="{Binding SteamId, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                      Width="150"
                      Margin="1,1,10,1" />
             <Button Padding="5"
