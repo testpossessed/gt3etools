@@ -74,6 +74,7 @@ public class MainViewModel : ObservableRecipient
         this.Console.ConsoleVisibility = contentVisibility;
         this.VerificationTest.VerificationTestVisibility = contentVisibility;
         this.FirstTimeRun.PropertyChanged -= this.HandleFirstTimeRunFinished;
+        this.VerificationTest.PropertyChanged += this.HandleVerificationTestFinished;
     }
 
     private void HandleThemeChanged()

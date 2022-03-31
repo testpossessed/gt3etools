@@ -1,24 +1,40 @@
-﻿using System.Threading;
-using System.Threading.Tasks;
+﻿using System;
 using Azure.Storage.Blobs;
 
 namespace GT3e.Tools.Services;
 
 internal class StorageProvider
 {
-    internal static async Task UploadVerificationFiles(string steamId,
+    internal static bool UploadVerificationFiles(string steamId,
         string resultsFilePath,
         string replayFilePath)
     {
-        var systemSettings = SettingsProvider.GetSystemSettings();
-        var blobContainerClient =
-            new BlobContainerClient(systemSettings.StorageConnectionString, "verification-tests");
-        await blobContainerClient.CreateIfNotExistsAsync();
+        try
+        {
+            var systemSettings = SettingsProvider.GetSystemSettings();
 
-        var blobClient = blobContainerClient.GetBlobClient($"{steamId}-results.json");
-        await blobClient.UploadAsync(resultsFilePath, true, CancellationToken.None);
+            var zipFilePath =
+                FilePackager.PackageVerificationTestFiles(steamId, resultsFilePath, replayFilePath);
 
-        var replayBlobClient = blobContainerClient.GetBlobClient($"{steamId}-replay-rpy");
-        await replayBlobClient.UploadAsync(replayFilePath, true, CancellationToken.None);
+            var message = $"Created {zipFilePath}";
+            LogWriter.Info(message);
+            ConsoleLog.Write(message);
+            var blobContainerClient =
+                new BlobContainerClient(systemSettings.StorageConnectionString, "verification-tests");
+            blobContainerClient.CreateIfNotExists();
+
+            var blobClient = blobContainerClient.GetBlobClient($"{steamId}.zip");
+            blobClient.Upload(zipFilePath, true);
+            message = $"Uploaded {zipFilePath}";
+            LogWriter.Info(message);
+            ConsoleLog.Write(message);
+            return true;
+        }
+        catch(Exception exception)
+        {
+            LogWriter.Error(exception, "Unexpected error uploading verification test files");
+            ConsoleLog.Write($"Unexpected error uploading verification test files: {exception.Message}");
+            return false;
+        }
     }
 }

@@ -86,11 +86,12 @@ public class VerificationTestViewModel : ObservableObject
         this.fileSystemWatcher.Dispose();
         this.fileSystemWatcher = null!;
 
-        this.UpdateUserSettings();
+        if(!StorageProvider.UploadVerificationFiles(this.SteamId, this.resultFilePath, this.replayFilePath))
+        {
+            return;
+        }
 
-        StorageProvider.UploadVerificationFiles(this.SteamId, this.resultFilePath, this.replayFilePath)
-                       .GetAwaiter()
-                       .GetResult();
+        this.UpdateUserSettings();
 
         this.VerificationTestVisibility = Visibility.Hidden;
     }
