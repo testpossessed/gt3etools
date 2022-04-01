@@ -1,10 +1,6 @@
-﻿using System;
-using System.IO;
-using System.Reactive.Disposables;
+﻿using System.IO;
 using System.Windows;
 using System.Windows.Input;
-using GT3e.Tools.Acc;
-using GT3e.Tools.Acc.Messages;
 using GT3e.Tools.Services;
 using Microsoft.Toolkit.Mvvm.ComponentModel;
 using Microsoft.Toolkit.Mvvm.Input;
@@ -101,14 +97,6 @@ public class VerificationTestViewModel : ObservableObject
         this.VerificationTestVisibility = Visibility.Hidden;
     }
 
-    private void UpdateUserSettings()
-    {
-        var userSettings = SettingsProvider.GetUserSettings();
-        userSettings.IsVerificationPending = true;
-        userSettings.SteamId = this.SteamId;
-        SettingsProvider.SaveSettings(userSettings);
-    }
-
     private void HandleResultsFileDetected(object sender, FileSystemEventArgs eventArgs)
     {
         this.resultFilePath = eventArgs.FullPath;
@@ -138,13 +126,24 @@ public class VerificationTestViewModel : ObservableObject
         this.WaitForResultsFile();
     }
 
+    private void UpdateUserSettings()
+    {
+        var userSettings = SettingsProvider.GetUserSettings();
+        userSettings.IsVerificationPending = true;
+        userSettings.SteamId = this.SteamId;
+        SettingsProvider.SaveSettings(userSettings);
+    }
+
     private bool ValidateSessionSettings()
     {
         var settings = AccConfigProvider.GetSeasonSettings();
         LogWriter.Info("Verifying settings");
         ConsoleLog.Write("Verifying settings...");
 
-        if(settings!.SessionGameplay.AggroMultiplier >= 90 && settings.SessionGameplay.SkillMultiplier >= 90 && settings.Events[0].TrackName.ToLowerInvariant() == "zolder")
+        if(settings!.SessionGameplay.AggroMultiplier >= 90 && settings.SessionGameplay.SkillMultiplier >= 90
+                                                           && settings.Events[0]
+                                                                      .TrackName.ToLowerInvariant()
+                                                           == "zolder")
         {
             return true;
         }
