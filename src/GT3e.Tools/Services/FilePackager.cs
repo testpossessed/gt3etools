@@ -1,5 +1,7 @@
 ﻿using System.IO;
 using System.IO.Compression;
+using System.Threading;
+using GT3e.Tools.Models;
 
 namespace GT3e.Tools.Services;
 
@@ -13,6 +15,7 @@ internal class FilePackager
         using var zipToOpen = new FileStream(zipFilePath, FileMode.Create);
         using var archive = new ZipArchive(zipToOpen, ZipArchiveMode.Update);
         archive.CreateEntryFromFile(resultFilePath, $"{steamId}.json");
+        Thread.Sleep(1000);
         archive.CreateEntryFromFile(replayFilePath, $"{steamId}.rpy");
 
         return zipFilePath;

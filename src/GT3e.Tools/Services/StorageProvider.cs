@@ -1,5 +1,9 @@
 ﻿using System;
+using System.IO;
+using System.Threading;
+using Azure.Storage;
 using Azure.Storage.Blobs;
+using Azure.Storage.Blobs.Models;
 
 namespace GT3e.Tools.Services;
 
@@ -24,7 +28,39 @@ internal class StorageProvider
             blobContainerClient.CreateIfNotExists();
 
             var blobClient = blobContainerClient.GetBlobClient($"{steamId}.zip");
-            blobClient.Upload(zipFilePath, true);
+            blobClient.DeleteIfExists(DeleteSnapshotsOption.IncludeSnapshots);
+
+            var fileInfo = new FileInfo(zipFilePath);
+            var totalBytes = fileInfo.Length;
+            var progressHandler = new Progress<long>();
+            var lastProgress = 0D;
+            progressHandler.ProgressChanged += (sender, bytesUploaded) =>
+                                               {
+                                                   if(bytesUploaded <= 0)
+                                                   {
+                                                       return;
+                                                   }
+
+                                                   var progress = Math.Floor((double)bytesUploaded / totalBytes * 100);
+                                                   if(progress > lastProgress && progress % 10 == 0)
+                                                   {
+                                                       ConsoleLog.Write($"Uploaded {progress}%...");
+                                                   }
+
+                                                   lastProgress = progress;
+                                               };
+
+            var options = new BlobUploadOptions
+            {
+                ProgressHandler = progressHandler,
+                TransferOptions = new StorageTransferOptions
+                {
+                    MaximumTransferSize = 4 * 1024 * 1024,
+                    InitialTransferSize = 4 * 1024 * 1024
+                }
+
+            };
+            blobClient.Upload(zipFilePath, options, CancellationToken.None);
             message = $"Uploaded {zipFilePath}";
             LogWriter.Info(message);
             ConsoleLog.Write(message);

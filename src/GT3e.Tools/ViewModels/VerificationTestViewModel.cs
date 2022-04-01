@@ -13,7 +13,7 @@ namespace GT3e.Tools.ViewModels;
 
 public class VerificationTestViewModel : ObservableObject
 {
-    private FileSystemWatcher fileSystemWatcher = null!;
+    private FileSystemWatcher fileSystemWatcher;
     private bool isCancelEnabled;
     private bool isStartEnabled;
     private string replayFilePath;
@@ -67,11 +67,16 @@ public class VerificationTestViewModel : ObservableObject
         var message = "Cancelling Verification Test";
         LogWriter.Info(message);
         ConsoleLog.Write($"{message}...");
+        if(this.fileSystemWatcher != null)
+        {
+            this.fileSystemWatcher.EnableRaisingEvents = false;
+            this.fileSystemWatcher.Dispose();
+            this.fileSystemWatcher = null;
+        }
 
-        this.fileSystemWatcher.EnableRaisingEvents = false;
-        this.fileSystemWatcher.Dispose();
-        this.fileSystemWatcher = null;
         ConsoleLog.Write("Finished");
+        this.IsCancelEnabled = false;
+        this.IsStartEnabled = true;
     }
 
     private void HandleReplayFileCreated(object sender, FileSystemEventArgs eventArgs)
