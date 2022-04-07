@@ -1,9 +1,13 @@
 ﻿using System;
 using System.IO;
+using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 using Azure.Storage;
 using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
+using GT3e.Tools.Models;
+using Newtonsoft.Json;
 
 namespace GT3e.Tools.Services;
 
@@ -72,5 +76,58 @@ internal class StorageProvider
             ConsoleLog.Write($"Unexpected error uploading verification test files: {exception.Message}");
             return false;
         }
+    }
+    internal static DriverStats? GetDriverStats(string steamId)
+    {
+        var message = $"Checking for driver stats";
+        LogWriter.Info(message);
+        ConsoleLog.Write($"{message}...");
+
+        var systemSettings = SettingsProvider.GetSystemSettings();
+
+        var blobContainerClient =
+            new BlobContainerClient(systemSettings.StorageConnectionString, "driver-stats");
+        blobContainerClient.CreateIfNotExists();
+
+        var blobClient = blobContainerClient.GetBlobClient($"{steamId}.json");
+        var exists = blobClient.Exists();
+        if (!exists.Value)
+        {
+            message = $"Stats not found, verification test review is still pending";
+            LogWriter.Info(message);
+            ConsoleLog.Write(message);
+            return null;
+        }
+
+        var progressHandler = new Progress<long>();
+        var lastProgress = 0D;
+        var totalBytes = blobClient.GetProperties().Value.ContentLength;
+        progressHandler.ProgressChanged += (sender, bytesUploaded) =>
+        {
+            if (bytesUploaded <= 0)
+            {
+                return;
+            }
+
+            var progress =
+                Math.Floor((double)bytesUploaded / totalBytes * 100);
+            if (progress > lastProgress && progress % 10 == 0)
+            {
+                ConsoleLog.Write($"Downloaded {progress}%...");
+            }
+
+            lastProgress = progress;
+        };
+
+        var statsBlob = blobClient.DownloadContent(progressHandler: progressHandler);
+        var jsonBytes = statsBlob.Value.Content.ToArray();
+        var json = Encoding.UTF8.GetString(jsonBytes);
+        var driverStats = JsonConvert.DeserializeObject<DriverStats>(json);
+
+        message = $"Downloaded stats";
+        LogWriter.Info(message);
+        ConsoleLog.Write(message);
+
+        return driverStats;
     }
 }

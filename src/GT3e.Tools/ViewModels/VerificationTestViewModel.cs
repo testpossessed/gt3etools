@@ -1,5 +1,4 @@
-﻿using System.IO;
-using System.Windows;
+﻿using System.Windows;
 using System.Windows.Input;
 using GT3e.Tools.Services;
 using Microsoft.Toolkit.Mvvm.ComponentModel;
@@ -9,12 +8,10 @@ namespace GT3e.Tools.ViewModels;
 
 public class VerificationTestViewModel : ObservableObject
 {
-    private FileSystemWatcher fileSystemWatcher;
     private bool isCancelEnabled;
     private bool isStartEnabled;
-    private string replayFilePath;
-    private string resultFilePath;
     private string steamId;
+    private VerificationTestRunner verificationTestRunner;
     private Visibility verificationTestVisibility;
 
     public VerificationTestViewModel()
@@ -31,6 +28,7 @@ public class VerificationTestViewModel : ObservableObject
     public ICommand CancelCommand { get; }
 
     public ICommand StartCommand { get; }
+
     public bool IsCancelEnabled
     {
         get => this.isCancelEnabled;
@@ -42,6 +40,7 @@ public class VerificationTestViewModel : ObservableObject
         get => this.isStartEnabled;
         set => this.SetProperty(ref this.isStartEnabled, value);
     }
+
     public string SteamId
     {
         get => this.steamId;
@@ -60,116 +59,27 @@ public class VerificationTestViewModel : ObservableObject
 
     private void HandleCancelCommand()
     {
-        var message = "Cancelling Verification Test";
-        LogWriter.Info(message);
-        ConsoleLog.Write($"{message}...");
-        if(this.fileSystemWatcher != null)
-        {
-            this.fileSystemWatcher.EnableRaisingEvents = false;
-            this.fileSystemWatcher.Dispose();
-            this.fileSystemWatcher = null;
-        }
-
-        ConsoleLog.Write("Finished");
-        this.IsCancelEnabled = false;
-        this.IsStartEnabled = true;
-    }
-
-    private void HandleReplayFileCreated(object sender, FileSystemEventArgs eventArgs)
-    {
-        this.replayFilePath = eventArgs.FullPath;
-        var message = $"Replay file detected: {this.replayFilePath}";
-        LogWriter.Info(message);
-        ConsoleLog.Write(message);
-
-        this.fileSystemWatcher.EnableRaisingEvents = false;
-        this.fileSystemWatcher.Created -= this.HandleReplayFileCreated;
-        this.fileSystemWatcher.Dispose();
-        this.fileSystemWatcher = null!;
-
-        if(!StorageProvider.UploadVerificationFiles(this.SteamId, this.resultFilePath, this.replayFilePath))
-        {
-            return;
-        }
-
-        this.UpdateUserSettings();
-
-        this.VerificationTestVisibility = Visibility.Hidden;
-    }
-
-    private void HandleResultsFileDetected(object sender, FileSystemEventArgs eventArgs)
-    {
-        this.resultFilePath = eventArgs.FullPath;
-        var message = $"Results file detected: {this.resultFilePath}";
-        LogWriter.Info(message);
-        ConsoleLog.Write(message);
-
-        this.fileSystemWatcher.EnableRaisingEvents = false;
-        this.fileSystemWatcher.Created -= this.HandleResultsFileDetected;
-        this.fileSystemWatcher.Dispose();
-        this.fileSystemWatcher = null!;
-
-        if(!this.ValidateSessionSettings())
-        {
-            this.IsStartEnabled = true;
-            this.IsCancelEnabled = false;
-            return;
-        }
-
-        this.WaitForReplayFile();
+        this.verificationTestRunner.Cancel();
     }
 
     private void HandleStartCommand()
     {
         this.IsStartEnabled = false;
         this.IsCancelEnabled = true;
-        this.WaitForResultsFile();
+        this.verificationTestRunner = new VerificationTestRunner();
+        this.verificationTestRunner.Run(this.SteamId, this.HandleVerificationTestCallback);
     }
 
-    private void UpdateUserSettings()
+    private void HandleVerificationTestCallback(bool result)
     {
-        var userSettings = SettingsProvider.GetUserSettings();
-        userSettings.IsVerificationPending = true;
-        userSettings.SteamId = this.SteamId;
-        SettingsProvider.SaveSettings(userSettings);
-    }
-
-    private bool ValidateSessionSettings()
-    {
-        var settings = AccConfigProvider.GetSeasonSettings();
-        LogWriter.Info("Verifying settings");
-        ConsoleLog.Write("Verifying settings...");
-
-        if(settings!.SessionGameplay.AggroMultiplier >= 90 && settings.SessionGameplay.SkillMultiplier >= 90
-                                                           && settings.Events[0]
-                                                                      .TrackName.ToLowerInvariant()
-                                                           == "zolder")
+        if(result)
         {
-            return true;
+            this.VerificationTestVisibility = Visibility.Collapsed;
         }
-
-        LogWriter.Info("Invalid session settings");
-        ConsoleLog.Write(
-            "The gameplay settings are not valid for the test session. Please make sure you have configured the session and track correctly and try again.");
-        return false;
-    }
-
-    private void WaitForReplayFile()
-    {
-        LogWriter.Info("Waiting for replay file");
-        ConsoleLog.Write("Waiting for replay file...");
-        this.fileSystemWatcher = new FileSystemWatcher(PathProvider.AccSavedReplaysFolderPath, "*.rpy");
-        this.fileSystemWatcher.Changed += this.HandleReplayFileCreated;
-        this.fileSystemWatcher.EnableRaisingEvents = true;
-    }
-
-    private void WaitForResultsFile()
-    {
-        LogWriter.Info("Waiting for session results file");
-        ConsoleLog.Write("Waiting for session results file...");
-        this.fileSystemWatcher = new FileSystemWatcher(PathProvider.AccResultFolderPath, "Race.json");
-        this.fileSystemWatcher.Changed += this.HandleResultsFileDetected;
-        this.fileSystemWatcher.Created += this.HandleResultsFileDetected;
-        this.fileSystemWatcher.EnableRaisingEvents = true;
+        else
+        {
+            this.IsCancelEnabled = false;
+            this.IsStartEnabled = true;
+        }
     }
 }

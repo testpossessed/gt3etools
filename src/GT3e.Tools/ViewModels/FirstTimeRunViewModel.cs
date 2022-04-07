@@ -3,9 +3,8 @@ using System.Diagnostics;
 using System.IO;
 using System.Windows;
 using System.Windows.Input;
-using GT3e.Tools.Acc.Models;
-using GT3e.Tools.Acc.Models.Config;
-using GT3e.Tools.Models;
+using GT3e.Acc;
+using GT3e.Acc.Models.Config;
 using GT3e.Tools.Services;
 using Microsoft.Toolkit.Mvvm.ComponentModel;
 using Microsoft.Toolkit.Mvvm.Input;
@@ -43,14 +42,14 @@ public class FirstTimeRunViewModel : ObservableObject
         this.OpenBroadcastingFileCommand = new RelayCommand(this.HandleOpenBroadcastingFileCommand);
         this.RetryInstallationCheck = new RelayCommand(this.ProcessInstallationCheck);
         this.SaveBroadcastingSettingsCommand = new RelayCommand(this.HandleSaveBroadcastingSettingsCommand);
-        this.InstallationCheckSuccessPanelVisibility = Visibility.Hidden;
-        this.InstallationCheckFailPanelVisibility = Visibility.Hidden;
-        this.BroadcastingCheckFailPanelVisibility = Visibility.Hidden;
-        this.BroadcastingCheckSuccessPanelVisibility = Visibility.Hidden;
+        this.InstallationCheckSuccessPanelVisibility = Visibility.Collapsed;
+        this.InstallationCheckFailPanelVisibility = Visibility.Collapsed;
+        this.BroadcastingCheckFailPanelVisibility = Visibility.Collapsed;
+        this.BroadcastingCheckSuccessPanelVisibility = Visibility.Collapsed;
         this.OpenBroadcastingFileVisibility = Visibility.Visible;
-        this.RetryBroadcastingCheckVisibility = Visibility.Hidden;
-        this.FinishedSummaryVisibility = Visibility.Hidden;
-        this.BroadcastingSettingsVisibility = Visibility.Hidden;
+        this.RetryBroadcastingCheckVisibility = Visibility.Collapsed;
+        this.FinishedSummaryVisibility = Visibility.Collapsed;
+        this.BroadcastingSettingsVisibility = Visibility.Collapsed;
         this.IsNextEnabled = true;
         this.IsFinishEnabled = false;
         this.ListenerPort = 9000;
@@ -93,8 +92,8 @@ public class FirstTimeRunViewModel : ObservableObject
         set
         {
             this.SetProperty(ref this.changeSettingsForMe, value);
-            this.OpenBroadcastingFileVisibility = value? Visibility.Hidden: Visibility.Visible;
-            this.RetryBroadcastingCheckVisibility = Visibility.Hidden;
+            this.OpenBroadcastingFileVisibility = value? Visibility.Collapsed: Visibility.Visible;
+            this.RetryBroadcastingCheckVisibility = Visibility.Collapsed;
             this.IsNextEnabled = value;
         }
     }
@@ -185,8 +184,8 @@ public class FirstTimeRunViewModel : ObservableObject
     {
         var userSettings = SettingsProvider.GetUserSettings();
         userSettings.IsInitialised = true;
-        SettingsProvider.SaveSettings(userSettings);
-        this.FirstTimeRunVisibility = Visibility.Hidden;
+        SettingsProvider.SaveUserSettings(userSettings);
+        this.FirstTimeRunVisibility = Visibility.Collapsed;
     }
 
     private void HandleNextCommand()
@@ -208,10 +207,10 @@ public class FirstTimeRunViewModel : ObservableObject
 
     private void HandleOpenBroadcastingFileCommand()
     {
-        this.OpenBroadcastingFileVisibility = Visibility.Hidden;
+        this.OpenBroadcastingFileVisibility = Visibility.Collapsed;
         this.RetryBroadcastingCheckVisibility = Visibility.Visible;
-        this.ChangeSettingsForMeVisibility = Visibility.Hidden;
-        Process.Start("notepad.exe", PathProvider.AccBroadcastingSettingsFilePath);
+        this.ChangeSettingsForMeVisibility = Visibility.Collapsed;
+        Process.Start("notepad.exe", AccPathProvider.BroadcastingSettingsFilePath);
     }
 
     private void HandleSaveBroadcastingSettingsCommand()
@@ -224,7 +223,7 @@ public class FirstTimeRunViewModel : ObservableObject
         };
         AccConfigProvider.SaveBroadcastingSettings(settings);
         this.FinishedSummaryVisibility = Visibility.Visible;
-        this.BroadcastingSettingsVisibility = Visibility.Hidden;
+        this.BroadcastingSettingsVisibility = Visibility.Collapsed;
         this.IsFinishEnabled = true;
     }
 
@@ -236,32 +235,32 @@ public class FirstTimeRunViewModel : ObservableObject
         if(settings?.UpdListenerPort > 0)
         {
             this.BroadcastingCheckSuccessPanelVisibility = Visibility.Visible;
-            this.BroadcastingCheckFailPanelVisibility = Visibility.Hidden;
+            this.BroadcastingCheckFailPanelVisibility = Visibility.Collapsed;
             this.IsFinishEnabled = true;
             this.BroadcastingPort = settings.UpdListenerPort.ToString();
         }
         else
         {
-            this.BroadcastingCheckSuccessPanelVisibility = Visibility.Hidden;
+            this.BroadcastingCheckSuccessPanelVisibility = Visibility.Collapsed;
             this.BroadcastingCheckFailPanelVisibility = Visibility.Visible;
             this.ChangeSettingsForMeVisibility = Visibility.Visible;
             this.OpenBroadcastingFileVisibility = Visibility.Visible;
-            this.RetryBroadcastingCheckVisibility = Visibility.Hidden;
+            this.RetryBroadcastingCheckVisibility = Visibility.Collapsed;
         }
     }
 
     private void ProcessInstallationCheck()
     {
         this.IsNextEnabled = false;
-        if(Directory.Exists(PathProvider.AccConfigFolderPath))
+        if(Directory.Exists(AccPathProvider.ConfigFolderPath))
         {
             this.InstallationCheckSuccessPanelVisibility = Visibility.Visible;
-            this.InstallationCheckFailPanelVisibility = Visibility.Hidden;
+            this.InstallationCheckFailPanelVisibility = Visibility.Collapsed;
             this.IsNextEnabled = true;
         }
         else
         {
-            this.InstallationCheckSuccessPanelVisibility = Visibility.Hidden;
+            this.InstallationCheckSuccessPanelVisibility = Visibility.Collapsed;
             this.InstallationCheckFailPanelVisibility = Visibility.Visible;
         }
     }
@@ -270,15 +269,15 @@ public class FirstTimeRunViewModel : ObservableObject
     {
         this.IsNextEnabled = false;
         this.IsFinishEnabled = false;
-        if (this.ChangeSettingsForMe)
+        if(this.ChangeSettingsForMe)
         {
-            this.FinishedSummaryVisibility = Visibility.Hidden;
+            this.FinishedSummaryVisibility = Visibility.Collapsed;
             this.BroadcastingSettingsVisibility = Visibility.Visible;
         }
         else
         {
             this.FinishedSummaryVisibility = Visibility.Visible;
-            this.BroadcastingSettingsVisibility = Visibility.Hidden;
+            this.BroadcastingSettingsVisibility = Visibility.Collapsed;
             this.IsFinishEnabled = true;
         }
     }

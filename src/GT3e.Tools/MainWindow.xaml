@@ -58,6 +58,8 @@
 
             <v:VerificationPending Visibility="{Binding VerificationPendingVisibility}"
                                    DataContext="{Binding VerificationPending}" />
+            <v:Dashboard Visibility="{Binding DashboardVisibility}"
+                         DataContext="{Binding Dashboard}" />
         </Grid>
     </DockPanel>
 </sf:ChromelessWindow>

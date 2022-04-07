@@ -4,10 +4,11 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:vm="clr-namespace:GT3e.Tools.ViewModels"
+             xmlns:views="clr-namespace:GT3e.Tools.Views"
              mc:Ignorable="d"
              d:DesignHeight="450"
              d:DesignWidth="800"
-             d:DataContext="{x:Type vm:VerificationPendingViewModel}"
+             d:DataContext="{d:DesignInstance Type=vm:VerificationPendingViewModel}"
              MaxWidth="800"
              VerticalAlignment="Stretch"
              HorizontalAlignment="Stretch">
@@ -20,23 +21,60 @@
                 Verification Pending
             </Label>
 
-            <TextBlock TextWrapping="Wrap"
-                       Margin="10">
-                Your verification test files are waiting to be checked by GT3e committee members.  Once they have been
-                accepted we will unlock additional Tools.
-            </TextBlock>
+            <StackPanel Orientation="Vertical"
+                        Visibility="{Binding AttemptPendingVisibility}">
+                <TextBlock TextWrapping="Wrap"
+                           Margin="10">
+                    Your verification test files are waiting to be checked by GT3e committee members.  Once they have
+                    been
+                    accepted we will unlock additional Tools.
+                </TextBlock>
 
-            <TextBlock TextWrapping="Wrap"
-                       Margin="10">
-                We will check the state of your test each time the app starts.  Alternatively you can click the Check
-                Now button below to check when the app is already running
-            </TextBlock>
+                <TextBlock TextWrapping="Wrap"
+                           Margin="10">
+                    We will check the state of your test each time the app starts.  Alternatively you can click the
+                    Check
+                    Now button below to check when the app is already running
+                </TextBlock>
+                <Button Command="{Binding CheckStatusCommand}"
+                        HorizontalAlignment="Right"
+                        Margin="10">
+                    Check Now
+                </Button>
+            </StackPanel>
 
-            <Button Command="{Binding CheckStatusCommand}"
-                    HorizontalAlignment="Right"
-                    Margin="10">
-                Check Now
-            </Button>
+            <StackPanel Orientation="Vertical"
+                        Visibility="{Binding AttemptRejectedMessageVisibility}">
+                <TextBlock TextWrapping="Wrap"
+                           Margin="10">
+                    Your attempt at the verification test has been reviewed and was rejected for the reasons shown
+                    below. You are allowed
+                    <Run Text="{Binding RemainingAttempts}" />
+                    more attempts.
+                </TextBlock>
+
+                <TextBlock TextWrapping="Wrap"
+                           Margin="10"
+                           Text="{Binding RejectionReason}"
+                           FontStyle="Italic" />
+
+                <views:VerificationTestSettings></views:VerificationTestSettings>
+
+                <StackPanel Orientation="Horizontal"
+                            HorizontalAlignment="Right">
+                    <Button Command="{Binding TryAgainCommand}"
+                            Margin="5"
+                            IsEnabled="{Binding IsRetryEnabled}">
+                        Try Again
+                    </Button>
+                    <Button Command="{Binding CancelRetryCommand}"
+                            Margin="5"
+                            IsEnabled="{Binding IsCancelRetryEnabled}">
+                        Cancel Retry
+                    </Button>
+                </StackPanel>
+            </StackPanel>
+
         </StackPanel>
 
     </Grid>

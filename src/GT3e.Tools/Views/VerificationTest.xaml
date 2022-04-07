@@ -4,28 +4,18 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:vm="clr-namespace:GT3e.Tools.ViewModels"
+             xmlns:views="clr-namespace:GT3e.Tools.Views"
              mc:Ignorable="d"
              d:DesignHeight="450"
              d:DesignWidth="800"
-             d:DataContext="{x:Type vm:VerificationTestViewModel}"
+             d:DataContext="{d:DesignInstance Type= vm:VerificationTestViewModel}"
              MaxWidth="800"
              VerticalAlignment="Stretch"
              HorizontalAlignment="Stretch">
     <Grid HorizontalAlignment="Center"
           VerticalAlignment="Top">
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="Auto" />
-            <ColumnDefinition Width="*" />
-        </Grid.ColumnDefinitions>
 
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
@@ -34,12 +24,10 @@
         </Grid.RowDefinitions>
 
         <Label Grid.Column="0"
-               Grid.ColumnSpan="2"
                Grid.Row="0">
             Verification Test
         </Label>
         <TextBlock Grid.Column="0"
-                   Grid.ColumnSpan="2"
                    Grid.Row="1"
                    TextWrapping="Wrap">
             Before you can race with us at GT3e.com you need to complete a verification test and submit it for review.
@@ -47,94 +35,9 @@
             review.  We will then monitor our backend system and detect when the session has been reviewed and update
             you on the status here.
         </TextBlock>
-        <TextBlock Grid.Column="0"
-                   Grid.ColumnSpan="2"
-                   Grid.Row="2"
-                   TextWrapping="Wrap">
-            You must complete a Single Player/ Quick Race session with the following settings at Zolder in
-            any GT3
-            car.  You must race cleanly and safely working your way up the field as far as you can.  Your result and
-            lap times are
-            important as they will be used to determine where you start your GT3e career, but of most
-            importance is how you race.  At GT3e.com we only want to race against clean, fair and safe drivers so drive
-            good lines, keep it on the black stuff and use good race tactics to pass your competitors cleanly without
-            contact.
-        </TextBlock>
-
-        <Label Grid.Column="0"
-               Grid.Row="3">
-            Day/Night Time
-        </Label>
-        <TextBlock Grid.Column="1"
-                   Grid.Row="3"
-                   VerticalAlignment="Center">
-            15:00
-        </TextBlock>
-
-        <Label Grid.Column="0"
-               Grid.Row="4"
-               VerticalAlignment="Center">
-            RaceSession Length
-        </Label>
-        <TextBlock Grid.Column="1"
-                   Grid.Row="4"
-                   VerticalAlignment="Center">
-            30 Minutes
-        </TextBlock>
-
-        <Label Grid.Column="0"
-               Grid.Row="5"
-               VerticalAlignment="Center">
-            Time Multiplier
-        </Label>
-        <TextBlock Grid.Column="1"
-                   Grid.Row="5"
-                   VerticalAlignment="Center">
-            x1
-        </TextBlock>
-
-        <Label Grid.Column="0"
-               Grid.Row="6"
-               VerticalAlignment="Center">
-            Starting Position
-        </Label>
-        <TextBlock Grid.Column="1"
-                   Grid.Row="6"
-                   VerticalAlignment="Center">
-            25
-        </TextBlock>
-
-        <Label Grid.Column="0"
-               Grid.Row="7">
-            Opponent Count
-        </Label>
-        <TextBlock Grid.Column="1"
-                   Grid.Row="7"
-                   VerticalAlignment="Center">
-            24
-        </TextBlock>
-
-        <Label Grid.Column="0"
-               Grid.Row="8">
-            Opponent Skill
-        </Label>
-        <TextBlock Grid.Column="1"
-                   Grid.Row="8"
-                   VerticalAlignment="Center">
-            90
-        </TextBlock>
-
-        <Label Grid.Column="0"
-               Grid.Row="9">
-            Opponent Agressiveness
-        </Label>
-        <TextBlock Grid.Column="1"
-                   Grid.Row="9"
-                   VerticalAlignment="Center">
-            90
-        </TextBlock>
-        <TextBlock Grid.Row="10"
-                   Grid.ColumnSpan="2"
+        <views:VerificationTestSettings Grid.Row="2"
+                                        Grid.Column="0" />
+        <TextBlock Grid.Row="3"
                    Grid.Column="0"
                    TextWrapping="Wrap">
             When you are ready to start you verification test, enter your Steam ID below and click Start. We will start
@@ -142,8 +45,7 @@
             you have finished the race BE SURE to go into the Replay and SAVE it.  We will validate the session and
             automatically upload files for verification using your Steam Id as your GT3e identity.
         </TextBlock>
-        <StackPanel Grid.Column="1"
-                    Grid.Row="11"
+        <StackPanel Grid.Row="4"
                     Orientation="Horizontal"
                     HorizontalAlignment="Right">
             <Label>Steam ID</Label>

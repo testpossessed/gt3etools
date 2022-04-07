@@ -1,0 +1,115 @@
+﻿<UserControl x:Class="GT3e.Tools.Views.VerificationTestSettings"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             mc:Ignorable="d"
+             d:DesignHeight="450"
+             d:DesignWidth="800">
+    <Grid HorizontalAlignment="Left">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <TextBlock Grid.Column="0"
+                   Grid.ColumnSpan="2"
+                   Grid.Row="0"
+                   TextWrapping="Wrap">
+            You must complete a Single Player/ Quick Race session with the following settings at Zolder in
+            any GT3
+            car.  You must race cleanly and safely working your way up the field as far as you can.  Your result and
+            lap times are
+            important as they will be used to determine where you start your GT3e career, but of most
+            importance is how you race.  At GT3e.com we only want to race against clean, fair and safe drivers so drive
+            good lines, keep it on the black stuff and use good race tactics to pass your competitors cleanly without
+            contact.
+        </TextBlock>
+
+        <Label Grid.Column="0"
+               Grid.Row="1">
+            Day/Night Time
+        </Label>
+        <TextBlock Grid.Column="1"
+                   Grid.Row="1"
+                   VerticalAlignment="Center">
+            15:00
+        </TextBlock>
+
+        <Label Grid.Column="0"
+               Grid.Row="2"
+               VerticalAlignment="Center">
+            RaceSession Length
+        </Label>
+        <TextBlock Grid.Column="1"
+                   Grid.Row="2"
+                   VerticalAlignment="Center">
+            30 Minutes
+        </TextBlock>
+
+        <Label Grid.Column="0"
+               Grid.Row="3"
+               VerticalAlignment="Center">
+            Time Multiplier
+        </Label>
+        <TextBlock Grid.Column="1"
+                   Grid.Row="3"
+                   VerticalAlignment="Center">
+            x1
+        </TextBlock>
+
+        <Label Grid.Column="0"
+               Grid.Row="4"
+               VerticalAlignment="Center">
+            Starting Position
+        </Label>
+        <TextBlock Grid.Column="1"
+                   Grid.Row="4"
+                   VerticalAlignment="Center">
+            25
+        </TextBlock>
+
+        <Label Grid.Column="0"
+               Grid.Row="5">
+            Opponent Count
+        </Label>
+        <TextBlock Grid.Column="1"
+                   Grid.Row="5"
+                   VerticalAlignment="Center">
+            24
+        </TextBlock>
+
+        <Label Grid.Column="0"
+               Grid.Row="6">
+            Opponent Skill
+        </Label>
+        <TextBlock Grid.Column="1"
+                   Grid.Row="6"
+                   VerticalAlignment="Center">
+            90
+        </TextBlock>
+
+        <Label Grid.Column="0"
+               Grid.Row="7">
+            Opponent Agressiveness
+        </Label>
+        <TextBlock Grid.Column="1"
+                   Grid.Row="7"
+                   VerticalAlignment="Center">
+            90
+        </TextBlock>
+    </Grid>
+</UserControl>

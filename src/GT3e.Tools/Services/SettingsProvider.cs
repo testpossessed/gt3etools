@@ -23,7 +23,7 @@ namespace GT3e.Tools.Services
       return JsonConvert.DeserializeObject<UserSettings>(json);
     }
 
-    internal static void SaveSettings(UserSettings settings)
+    internal static void SaveUserSettings(UserSettings settings)
     {
       var json = JsonConvert.SerializeObject(settings);
       File.WriteAllText(PathProvider.UserSettingsFilePath, json);

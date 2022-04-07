@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using System.Windows;
 using GT3e.Tools.Models;
 using GT3e.Tools.Services;
@@ -22,6 +23,8 @@ public class MainViewModel : ObservableRecipient
     }
 
     public ConsoleViewModel Console { get; } = new();
+
+    public DashboardViewModel Dashboard { get; } = new();
 
     public FirstTimeRunViewModel FirstTimeRun { get; } = new();
 
@@ -68,7 +71,7 @@ public class MainViewModel : ObservableRecipient
         }
 
         var contentVisibility = this.FirstTimeRun.FirstTimeRunVisibility == Visibility.Visible
-                                    ? Visibility.Hidden
+                                    ? Visibility.Collapsed
                                     : Visibility.Visible;
         this.FurnitureVisibility = contentVisibility;
         this.Console.ConsoleVisibility = contentVisibility;
@@ -80,7 +83,7 @@ public class MainViewModel : ObservableRecipient
     private void HandleThemeChanged()
     {
         var theme = this.SelectedTheme.Replace(" ", "");
-        SettingsProvider.SaveSettings(new UserSettings
+        SettingsProvider.SaveUserSettings(new UserSettings
         {
             Theme = this.SelectedTheme
         });
@@ -96,6 +99,22 @@ public class MainViewModel : ObservableRecipient
         }
     }
 
+    private void HandleVerificationPendingFinished(object? sender, PropertyChangedEventArgs eventArgs)
+    {
+        if(eventArgs.PropertyName != nameof(this.VerificationPending.VerificationPendingVisibility))
+        {
+            return;
+        }
+
+        if(this.VerificationPending.VerificationPendingVisibility != Visibility.Collapsed)
+        {
+            return;
+        }
+
+        this.Dashboard.DashboardVisibility = Visibility.Visible;
+        this.VerificationPending.PropertyChanged -= this.HandleVerificationPendingFinished;
+    }
+
     private void HandleVerificationTestFinished(object? sender, PropertyChangedEventArgs eventArgs)
     {
         if(eventArgs.PropertyName != nameof(this.VerificationTest.VerificationTestVisibility))
@@ -104,48 +123,75 @@ public class MainViewModel : ObservableRecipient
         }
 
         var contentVisibility = this.VerificationTest.VerificationTestVisibility == Visibility.Visible
-                                    ? Visibility.Hidden
+                                    ? Visibility.Collapsed
                                     : Visibility.Visible;
         this.VerificationPending.VerificationPendingVisibility = contentVisibility;
     }
 
     private void Initialise()
     {
-        var settings = SettingsProvider.GetUserSettings();
-        this.PrepareFirstTimeRun(settings);
-        this.PrepareVerificationTest(settings);
-        this.PrepareVerificationPending(settings);
+        var userSettings = SettingsProvider.GetUserSettings();
+        this.PrepareFirstTimeRun(userSettings);
+        this.PrepareVerificationTest(userSettings);
+        this.PrepareVerificationPending(userSettings);
+        this.PrepareDashboard(userSettings);
     }
 
-    private void PrepareFirstTimeRun(UserSettings settings)
+    private void PrepareDashboard(UserSettings userSettings)
+    {
+        if(userSettings.IsVerified)
+        {
+            this.Dashboard.DashboardVisibility = Visibility.Visible;
+        }
+    }
+
+    private void PrepareFirstTimeRun(UserSettings userSettings)
     {
         this.FirstTimeRun.FirstTimeRunVisibility =
-            settings.IsInitialised? Visibility.Hidden: Visibility.Visible;
-        var contentVisibility = settings.IsInitialised? Visibility.Visible: Visibility.Hidden;
+            userSettings.IsInitialised? Visibility.Collapsed: Visibility.Visible;
+        var contentVisibility = userSettings.IsInitialised? Visibility.Visible: Visibility.Collapsed;
         this.FurnitureVisibility = contentVisibility;
         this.Console.ConsoleVisibility = contentVisibility;
-        if(!settings.IsInitialised)
+        if(!userSettings.IsInitialised)
         {
             this.FirstTimeRun.PropertyChanged += this.HandleFirstTimeRunFinished;
         }
     }
 
-    private void PrepareVerificationPending(UserSettings settings)
+    private void PrepareVerificationPending(UserSettings userSettings)
     {
-        var visibility = Visibility.Hidden;
-        if(settings.IsInitialised && !settings.IsVerified && settings.IsVerificationPending)
+        var visibility = Visibility.Collapsed;
+        if(userSettings.IsInitialised && !userSettings.IsVerified && userSettings.IsVerificationPending)
         {
-            visibility = Visibility.Visible;
+            var driverStats = StorageProvider.GetDriverStats(userSettings.SteamId);
+            var hasAcceptance = driverStats?.VerificationTestAttempts.Any(e => e.Rejected == false);
+            var isVerified = hasAcceptance.GetValueOrDefault();
+            visibility = isVerified? Visibility.Collapsed: Visibility.Visible;
+
+            if(isVerified)
+            {
+                userSettings.IsVerificationPending = false;
+                userSettings.IsVerified = true;
+                userSettings.IsFirstTimeInDashboard = true;
+                userSettings.FirstName = driverStats!.FirstName;
+                userSettings.LastName = driverStats.LastName;
+
+                SettingsProvider.SaveUserSettings(userSettings);
+            }
+            else
+            {
+                this.VerificationPending.PropertyChanged += this.HandleVerificationPendingFinished;
+            }
         }
 
         this.VerificationPending.VerificationPendingVisibility = visibility;
     }
 
-    private void PrepareVerificationTest(UserSettings settings)
+    private void PrepareVerificationTest(UserSettings userSettings)
     {
-        var visibility = Visibility.Hidden;
-        var showVerificationTest =
-            settings.IsInitialised && !settings.IsVerified && !settings.IsVerificationPending;
+        var visibility = Visibility.Collapsed;
+        var showVerificationTest = userSettings.IsInitialised && !userSettings.IsVerified
+                                                              && !userSettings.IsVerificationPending;
         if(showVerificationTest)
         {
             visibility = Visibility.Visible;

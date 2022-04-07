@@ -1,8 +1,9 @@
 ﻿using System;
 using System.IO;
 using System.Text;
-using GT3e.Tools.Acc.Models.Config;
-using GT3e.Tools.Acc.Models.Config.SeasonEntity;
+using GT3e.Acc;
+using GT3e.Acc.Models.Config;
+using GT3e.Acc.Models.Config.SeasonEntity;
 using Newtonsoft.Json;
 
 namespace GT3e.Tools.Services;
@@ -11,12 +12,12 @@ internal class AccConfigProvider
 {
     internal static BroadcastingSettings? GetBroadcastingSettings()
     {
-        if(!File.Exists(PathProvider.AccBroadcastingSettingsFilePath))
+        if(!File.Exists(AccPathProvider.BroadcastingSettingsFilePath))
         {
             return null;
         }
 
-        var content = File.ReadAllText(PathProvider.AccBroadcastingSettingsFilePath, Encoding.UTF8);
+        var content = File.ReadAllText(AccPathProvider.BroadcastingSettingsFilePath, Encoding.UTF8);
         content = content.Replace(Environment.NewLine, "")
                          .Replace("\0", "")
                          .Replace("\n", "");
@@ -25,12 +26,12 @@ internal class AccConfigProvider
 
     internal static SeasonSettings? GetSeasonSettings()
     {
-        if(!File.Exists(PathProvider.AccSeasonSettingsFilePath))
+        if(!File.Exists(AccPathProvider.SeasonSettingsFilePath))
         {
             return null;
         }
 
-        var content = File.ReadAllText(PathProvider.AccSeasonSettingsFilePath, Encoding.UTF8);
+        var content = File.ReadAllText(AccPathProvider.SeasonSettingsFilePath, Encoding.UTF8);
         content = content.Replace(Environment.NewLine, "")
                          .Replace("\0", "")
                          .Replace("\n", "");
@@ -40,6 +41,6 @@ internal class AccConfigProvider
     internal static void SaveBroadcastingSettings(BroadcastingSettings settings)
     {
         var json = JsonConvert.SerializeObject(settings);
-        File.WriteAllText(PathProvider.AccBroadcastingSettingsFilePath, json);
+        File.WriteAllText(AccPathProvider.BroadcastingSettingsFilePath, json);
     }
 }
