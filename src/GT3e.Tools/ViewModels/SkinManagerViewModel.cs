@@ -12,6 +12,7 @@ namespace GT3e.Tools.ViewModels;
 public class SkinManagerViewModel : ObservableObject
 {
     private CustomSkin selectedSkin;
+    private bool isUploadEnabled;
 
     public SkinManagerViewModel()
     {
@@ -43,11 +44,21 @@ public class SkinManagerViewModel : ObservableObject
     public CustomSkin SelectedSkin
     {
         get => this.selectedSkin;
-        set => this.SetProperty(ref this.selectedSkin, value);
+        set
+        {
+            this.SetProperty(ref this.selectedSkin, value);
+            this.IsUploadEnabled = value != null;
+        }
     }
 
     private async Task HandleUploadCommand()
     {
         await StorageProvider.UploadCustomSkin(this.SelectedSkin);
+    }
+
+    public bool IsUploadEnabled
+    {
+        get  => this.isUploadEnabled; 
+        set => this.SetProperty(ref this.isUploadEnabled, value);
     }
 }
