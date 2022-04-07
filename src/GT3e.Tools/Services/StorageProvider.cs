@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -56,13 +58,67 @@ internal class StorageProvider
                 MaximumTransferSize = 4 * 1024 * 1024,
                 InitialTransferSize = 4 * 1024 * 1024
             }
-
         };
 
         await blobClient.UploadAsync(zipFilePath, options, CancellationToken.None);
         message = $"Uploaded {zipFilePath}";
         LogWriter.Info(message);
         ConsoleLog.Write(message);
+    }
+
+    internal static DriverStats? GetDriverStats(string steamId)
+    {
+        var message = "Checking for driver stats";
+        LogWriter.Info(message);
+        ConsoleLog.Write($"{message}...");
+
+        var systemSettings = SettingsProvider.GetSystemSettings();
+
+        var blobContainerClient =
+            new BlobContainerClient(systemSettings.StorageConnectionString, "driver-stats");
+        blobContainerClient.CreateIfNotExists();
+
+        var blobClient = blobContainerClient.GetBlobClient($"{steamId}.json");
+        var exists = blobClient.Exists();
+        if(!exists.Value)
+        {
+            message = "Stats not found, verification test review is still pending";
+            LogWriter.Info(message);
+            ConsoleLog.Write(message);
+            return null;
+        }
+
+        var progressHandler = new Progress<long>();
+        var lastProgress = 0D;
+        var totalBytes = blobClient.GetProperties()
+                                   .Value.ContentLength;
+        progressHandler.ProgressChanged += (sender, bytesUploaded) =>
+                                           {
+                                               if(bytesUploaded <= 0)
+                                               {
+                                                   return;
+                                               }
+
+                                               var progress =
+                                                   Math.Floor((double) bytesUploaded / totalBytes * 100);
+                                               if(progress > lastProgress && progress % 10 == 0)
+                                               {
+                                                   ConsoleLog.Write($"Downloaded {progress}%...");
+                                               }
+
+                                               lastProgress = progress;
+                                           };
+
+        var statsBlob = blobClient.DownloadContent(progressHandler: progressHandler);
+        var jsonBytes = statsBlob.Value.Content.ToArray();
+        var json = Encoding.UTF8.GetString(jsonBytes);
+        var driverStats = JsonConvert.DeserializeObject<DriverStats>(json);
+
+        message = "Downloaded stats";
+        LogWriter.Info(message);
+        ConsoleLog.Write(message);
+
+        return driverStats;
     }
 
     internal static bool UploadVerificationFiles(string steamId,
@@ -97,7 +153,8 @@ internal class StorageProvider
                                                        return;
                                                    }
 
-                                                   var progress = Math.Floor((double)bytesUploaded / totalBytes * 100);
+                                                   var progress =
+                                                       Math.Floor((double) bytesUploaded / totalBytes * 100);
                                                    if(progress > lastProgress && progress % 10 == 0)
                                                    {
                                                        ConsoleLog.Write($"Uploaded {progress}%...");
@@ -114,7 +171,6 @@ internal class StorageProvider
                     MaximumTransferSize = 4 * 1024 * 1024,
                     InitialTransferSize = 4 * 1024 * 1024
                 }
-
             };
             blobClient.Upload(zipFilePath, options, CancellationToken.None);
             message = $"Uploaded {zipFilePath}";
@@ -129,57 +185,22 @@ internal class StorageProvider
             return false;
         }
     }
-    internal static DriverStats? GetDriverStats(string steamId)
-    {
-        var message = $"Checking for driver stats";
-        LogWriter.Info(message);
-        ConsoleLog.Write($"{message}...");
 
+    
+    public static Task<IEnumerable<CustomSkinInfo>> GetCustomSkins()
+    {
         var systemSettings = SettingsProvider.GetSystemSettings();
 
         var blobContainerClient =
-            new BlobContainerClient(systemSettings.StorageConnectionString, "driver-stats");
-        blobContainerClient.CreateIfNotExists();
+            new BlobContainerClient(systemSettings.StorageConnectionString, "custom-skins");
+        var pages = blobContainerClient.GetBlobs()
+                                       .AsPages();
 
-        var blobClient = blobContainerClient.GetBlobClient($"{steamId}.json");
-        var exists = blobClient.Exists();
-        if (!exists.Value)
-        {
-            message = $"Stats not found, verification test review is still pending";
-            LogWriter.Info(message);
-            ConsoleLog.Write(message);
-            return null;
-        }
-
-        var progressHandler = new Progress<long>();
-        var lastProgress = 0D;
-        var totalBytes = blobClient.GetProperties().Value.ContentLength;
-        progressHandler.ProgressChanged += (sender, bytesUploaded) =>
-        {
-            if (bytesUploaded <= 0)
-            {
-                return;
-            }
-
-            var progress =
-                Math.Floor((double)bytesUploaded / totalBytes * 100);
-            if (progress > lastProgress && progress % 10 == 0)
-            {
-                ConsoleLog.Write($"Downloaded {progress}%...");
-            }
-
-            lastProgress = progress;
-        };
-
-        var statsBlob = blobClient.DownloadContent(progressHandler: progressHandler);
-        var jsonBytes = statsBlob.Value.Content.ToArray();
-        var json = Encoding.UTF8.GetString(jsonBytes);
-        var driverStats = JsonConvert.DeserializeObject<DriverStats>(json);
-
-        message = $"Downloaded stats";
-        LogWriter.Info(message);
-        ConsoleLog.Write(message);
-
-        return driverStats;
+        return Task.FromResult<IEnumerable<CustomSkinInfo>>(
+            (from page in pages from item in page.Values select new CustomSkinInfo
+                {
+                    FileName = item.Name,
+                    LastModifiedUtc = item.Properties.LastModified.GetValueOrDefault().ToUniversalTime().DateTime
+                }).ToList());
     }
 }
