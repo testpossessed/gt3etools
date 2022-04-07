@@ -24,7 +24,7 @@
                   Padding="10"
                   BorderThickness="1"
                   BorderBrush="DarkGray"
-                  MaxHeight="250"
+                  MaxHeight="500"
                   VerticalAlignment="Top"
                   Header="Upload"
                   MaxWidth="800">
@@ -39,6 +39,7 @@
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
 
                 <TextBlock Grid.Row="0"
@@ -48,11 +49,25 @@
                            MaxWidth="700"
                            Margin="5">
                     If you want to use a custom Skin/Livery when racing with GT3e.com you need to upload it here.  Once
-                    you have selected the car/s and skin/s we will package them up for you and upload to
-                    our repository where other members can download them.  This is important so other members see your
+                    you have selected a skin we will package it up for you and upload to
+                    our repository where other members can download it.  This is important so other members see your
                     car at it's best and to avoid lag when drivers join a session.
                 </TextBlock>
                 <TextBlock Grid.Row="1"
+                           Grid.Column="0"
+                           Grid.ColumnSpan="2"
+                           TextWrapping="Wrap"
+                           MaxWidth="700"
+                           Margin="5">
+                   Custom skins must conform to the following naming convention.  Only those that do will be available in the list below.
+                   <LineBreak/>
+                   <LineBreak />
+                   [Allocated Race Number]-[Drivers Surname]-[Car]-[Class]
+                   <LineBreak/>
+                   <LineBreak />
+                   For more information on using custom skins/liveries with GT3e visit https://www.gt3e.com/liveries
+                </TextBlock>
+                <TextBlock Grid.Row="2"
                            Grid.Column="0"
                            Grid.ColumnSpan="2"
                            TextWrapping="Wrap"
@@ -63,21 +78,30 @@
                     image editing tools.
                 </TextBlock>
 
-                <Label Grid.Row="2"
-                       Grid.Column="0">
-                    Car/s:
+                <Label Grid.Row="3"
+                       Grid.Column="0" Margin="0,5">
+                    Skin:
                 </Label>
-                <sf:ComboBoxAdv Grid.Column="1"
-                                Grid.Row="2"
-                                Height="30"
-                                MinWidth="200"
-                                ItemsSource="{Binding CustomCars}"
-                                DisplayMemberPath="CustomSkinName"
-                                SelectedItem="{Binding SelectedCustomCar, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-                <Button Grid.Row="3"
+                <StackPanel Orientation="Horizontal"
+                            Grid.Column="1"
+                            Grid.Row="3">
+                <sf:ComboBoxAdv
+                                MinWidth="250"
+                                DisplayMemberPath="Name"
+                                ItemsSource="{Binding Skins}"
+                                SelectedItem="{Binding SelectedSkin, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                Margin="0,2" />
+                <Button Command="{Binding RefreshSkinsCommand}" VerticalAlignment="Center" Margin="5,2">
+                    <Image Source="/GT3e.Tools;component/Restore.ico"
+                           Width="24"
+                           Height="24" />
+
+                </Button>
+                </StackPanel>
+                <Button Grid.Row="4"
                         Grid.Column="1"
                         HorizontalAlignment="Right"
-                        Command="{Binding UploadCommand}">
+                        Command="{Binding UploadCommand}" Height="30" Width="75" Margin="5">
                     Upload
                 </Button>
 

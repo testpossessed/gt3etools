@@ -1,7 +1,9 @@
 ﻿using System.Collections.ObjectModel;
 using System.Threading.Tasks;
+using System.Windows.Input;
 using GT3e.Acc;
 using GT3e.Acc.Models.Customs;
+using GT3e.Tools.Services;
 using Microsoft.Toolkit.Mvvm.ComponentModel;
 using Microsoft.Toolkit.Mvvm.Input;
 
@@ -9,32 +11,43 @@ namespace GT3e.Tools.ViewModels;
 
 public class SkinManagerViewModel : ObservableObject
 {
-    private CustomCar selectedCustomCar;
+    private CustomSkin selectedSkin;
 
     public SkinManagerViewModel()
     {
         this.UploadCommand = new AsyncRelayCommand(this.HandleUploadCommand);
-        var customCars = AccDataProvider.GetCustomCars();
-        foreach(var customCar in customCars)
+        this.RefreshSkinsCommand = new RelayCommand(this.HandleRefreshSkinsCommand);
+        this.LoadCustomSkins();
+    }
+
+    public ICommand RefreshSkinsCommand { get; }
+
+    private void HandleRefreshSkinsCommand()
+    {
+        this.LoadCustomSkins();
+    }
+
+    private void LoadCustomSkins()
+    {
+        var customSkins = AccDataProvider.GetCustomSkins();
+        this.Skins.Clear();
+        foreach(var skin in customSkins)
         {
-            if(!string.IsNullOrWhiteSpace(customCar.CustomSkinName))
-            {
-                this.CustomCars.Add(customCar);
-            }
+            this.Skins.Add(skin);
         }
     }
 
-    public ObservableCollection<CustomCar> CustomCars { get; } = new();
+    public ObservableCollection<CustomSkin> Skins { get; } = new();
 
     public IAsyncRelayCommand UploadCommand { get; }
-    public CustomCar SelectedCustomCar
+    public CustomSkin SelectedSkin
     {
-        get => this.selectedCustomCar;
-        set => this.SetProperty(ref this.selectedCustomCar, value);
+        get => this.selectedSkin;
+        set => this.SetProperty(ref this.selectedSkin, value);
     }
 
-    private Task HandleUploadCommand()
+    private async Task HandleUploadCommand()
     {
-        return null;
+        await StorageProvider.UploadCustomSkin(this.SelectedSkin);
     }
 }

@@ -1,6 +1,7 @@
 ﻿using System.IO;
 using System.IO.Compression;
 using System.Threading;
+using GT3e.Acc.Models.Customs;
 using GT3e.Tools.Models;
 
 namespace GT3e.Tools.Services;
@@ -21,17 +22,19 @@ internal class FilePackager
         return zipFilePath;
     }
 
-    internal static string PackageCustomSkin(string skinName,
-        string customCarFilePath,
-        string customSkinFolderPath)
+    internal static string PackageCustomSkin(CustomSkin customSkin)
     {
-        var zipFilePath = Path.Combine(PathProvider.AppDataFolderPath, $"{skinName}.zip");
+        var zipFilePath = Path.Combine(PathProvider.AppDataFolderPath, $"{customSkin.Name}.zip");
+        var imageFilePaths = Directory.GetFiles(customSkin.FolderPath, "*.png");
+
         using var zipToOpen = new FileStream(zipFilePath, FileMode.Create);
         using var archive = new ZipArchive(zipToOpen, ZipArchiveMode.Update);
-        archive.CreateEntryFromFile(customCarFilePath, $"{skinName}.json");
-        Thread.Sleep(1000);
-        archive.CreateEntryFromFile(customSkinFolderPath, $"{skinName}.rpy");
 
+        foreach(var imageFilePath in imageFilePaths)
+        {
+            archive.CreateEntryFromFile(imageFilePath, $"Customs/Liveries/{customSkin.Name}/{Path.GetFileName(imageFilePath)}");
+        }
+        
         return zipFilePath;
     }
 }

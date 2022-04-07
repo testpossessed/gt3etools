@@ -13,6 +13,7 @@
     <None Remove="flag_green.ico" />
     <None Remove="flag_red.bmp" />
     <None Remove="flag_red.ico" />
+    <None Remove="Restore.ico" />
     <None Remove="splash.png" />
     <None Remove="SystemSettings.json" />
     <None Remove="wizard-banner.png" />
@@ -62,6 +63,7 @@
     <Resource Include="Icon.ico">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Resource>
+    <Resource Include="Restore.ico" />
     <Resource Include="save.ico" />
     <Resource Include="wizard-banner.png" />
   </ItemGroup>

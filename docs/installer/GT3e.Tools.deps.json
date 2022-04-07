@@ -9,7 +9,7 @@
       "GT3e.Tools/1.0.0": {
         "dependencies": {
           "Azure.Storage.Blobs": "12.11.0",
-          "GT3e.Tools.Acc": "1.0.0",
+          "GT3e.Acc": "1.0.0",
           "Microsoft.Extensions.Configuration": "6.0.1",
           "Microsoft.Extensions.Configuration.Abstractions": "6.0.0",
           "Microsoft.Extensions.Configuration.EnvironmentVariables": "6.0.1",
@@ -507,12 +507,13 @@
         }
       },
       "System.Threading.Tasks.Extensions/4.5.4": {},
-      "GT3e.Tools.Acc/1.0.0": {
+      "GT3e.Acc/1.0.0": {
         "dependencies": {
+          "Newtonsoft.Json": "13.0.1",
           "System.Reactive": "5.0.0"
         },
         "runtime": {
-          "GT3e.Tools.Acc.dll": {}
+          "GT3e.Acc.dll": {}
         }
       }
     }
@@ -852,7 +853,7 @@
       "path": "system.threading.tasks.extensions/4.5.4",
       "hashPath": "system.threading.tasks.extensions.4.5.4.nupkg.sha512"
     },
-    "GT3e.Tools.Acc/1.0.0": {
+    "GT3e.Acc/1.0.0": {
       "type": "project",
       "serviceable": false,
       "sha512": ""

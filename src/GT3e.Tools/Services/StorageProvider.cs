@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Azure.Storage;
 using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
+using GT3e.Acc.Models.Customs;
 using GT3e.Tools.Models;
 using Newtonsoft.Json;
 
@@ -13,6 +14,57 @@ namespace GT3e.Tools.Services;
 
 internal class StorageProvider
 {
+    public static async Task UploadCustomSkin(CustomSkin customSkin)
+    {
+        var systemSettings = SettingsProvider.GetSystemSettings();
+        var zipFilePath = FilePackager.PackageCustomSkin(customSkin);
+
+        var message = $"Created {zipFilePath}";
+        LogWriter.Info(message);
+        ConsoleLog.Write(message);
+        var blobContainerClient =
+            new BlobContainerClient(systemSettings.StorageConnectionString, "custom-skins");
+        await blobContainerClient.CreateIfNotExistsAsync();
+
+        var blobClient = blobContainerClient.GetBlobClient($"{customSkin.Name}.zip");
+        var fileInfo = new FileInfo(zipFilePath);
+        var totalBytes = fileInfo.Length;
+        var progressHandler = new Progress<long>();
+        var lastProgress = 0D;
+        progressHandler.ProgressChanged += (sender, bytesUploaded) =>
+                                           {
+                                               if(bytesUploaded <= 0)
+                                               {
+                                                   return;
+                                               }
+
+                                               var progress =
+                                                   Math.Floor((double) bytesUploaded / totalBytes * 100);
+                                               if(progress > lastProgress && progress % 10 == 0)
+                                               {
+                                                   ConsoleLog.Write($"Uploaded {progress}%...");
+                                               }
+
+                                               lastProgress = progress;
+                                           };
+
+        var options = new BlobUploadOptions
+        {
+            ProgressHandler = progressHandler,
+            TransferOptions = new StorageTransferOptions
+            {
+                MaximumTransferSize = 4 * 1024 * 1024,
+                InitialTransferSize = 4 * 1024 * 1024
+            }
+
+        };
+
+        await blobClient.UploadAsync(zipFilePath, options, CancellationToken.None);
+        message = $"Uploaded {zipFilePath}";
+        LogWriter.Info(message);
+        ConsoleLog.Write(message);
+    }
+
     internal static bool UploadVerificationFiles(string steamId,
         string resultsFilePath,
         string replayFilePath)
