@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.IO;
 using System.Linq;
 using System.Windows;
 using GT3e.Tools.Models;
@@ -131,6 +132,10 @@ public class MainViewModel : ObservableRecipient
     private void Initialise()
     {
         var userSettings = SettingsProvider.GetUserSettings();
+        if(!Directory.Exists(PathProvider.SyncDownloadsFolderPath))
+        {
+            Directory.CreateDirectory(PathProvider.SyncDownloadsFolderPath);
+        }
         this.PrepareFirstTimeRun(userSettings);
         this.PrepareVerificationTest(userSettings);
         this.PrepareVerificationPending(userSettings);
