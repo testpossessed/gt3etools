@@ -1,6 +1,8 @@
 ﻿using System.IO;
 using System.IO.Compression;
 using System.Threading;
+using System.Threading.Tasks;
+using GT3e.Acc;
 using GT3e.Acc.Models.Customs;
 using GT3e.Tools.Models;
 
@@ -36,5 +38,12 @@ internal class FilePackager
         }
         
         return zipFilePath;
+    }
+
+    internal static void UnpackCustomSkin(string zipFilePath)
+    {
+        using var zipToOpen = new FileStream(zipFilePath, FileMode.Open);
+        using var archive = new ZipArchive(zipToOpen, ZipArchiveMode.Read);
+        archive.ExtractToDirectory(AccPathProvider.DocumentsFolderPath, true);
     }
 }

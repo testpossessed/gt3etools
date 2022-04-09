@@ -2,6 +2,7 @@
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Windows;
 using System.Windows.Input;
 using GT3e.Acc;
 using GT3e.Acc.Models.Customs;
@@ -19,6 +20,7 @@ public class SkinManagerViewModel : ObservableObject
     private bool isSyncEnabled;
     private bool isUploadEnabled;
     private int newSkinCount;
+    private Visibility noSkinsMessageVisibility;
     private CustomSkin selectedSkin;
     private int updatedSkinCount;
 
@@ -27,12 +29,15 @@ public class SkinManagerViewModel : ObservableObject
         this.UploadCommand = new AsyncRelayCommand(this.HandleUploadCommand);
         this.RefreshLocalSkinsCommand = new RelayCommand(this.HandleRefreshLocalSkinsCommand);
         this.SyncSkinsCommand = new AsyncRelayCommand(this.HandleSyncSkinsCommand);
+        this.RefreshRemoteSkinsCommand = new RelayCommand(this.HandleRemoteLocalSkinsCommand);
 
         this.LoadLocalCustomSkins();
         this.LoadRemoteCustomSkins();
     }
 
     public ICommand RefreshLocalSkinsCommand { get; }
+
+    public ICommand RefreshRemoteSkinsCommand { get; }
 
     public ObservableCollection<CustomSkin> Skins { get; } = new();
 
@@ -57,6 +62,12 @@ public class SkinManagerViewModel : ObservableObject
         get => this.newSkinCount;
         set => this.SetProperty(ref this.newSkinCount, value);
     }
+
+    public Visibility NoSkinsMessageVisibility
+    {
+        get => this.noSkinsMessageVisibility;
+        set => this.SetProperty(ref this.noSkinsMessageVisibility, value);
+    }
     public CustomSkin SelectedSkin
     {
         get => this.selectedSkin;
@@ -78,14 +89,32 @@ public class SkinManagerViewModel : ObservableObject
         this.LoadLocalCustomSkins();
     }
 
-    private Task HandleSyncSkinsCommand()
+    private void HandleRemoteLocalSkinsCommand()
     {
-        return null;
+        this.LoadRemoteCustomSkins();
+    }
+
+    private async Task HandleSyncSkinsCommand()
+    {
+        var skinsToSync = this.newRemoteSkins.Concat(this.updatedRemoteSkins)
+                              .ToList();
+
+        foreach(var skinInfo in skinsToSync)
+        {
+            var zipFilePath = await StorageProvider.DownloadCustomSkin(skinInfo);
+            FilePackager.UnpackCustomSkin(zipFilePath);
+        }
+
+        this.LoadLocalCustomSkins();
+        this.LoadRemoteCustomSkins();
     }
 
     private async Task HandleUploadCommand()
     {
         await StorageProvider.UploadCustomSkin(this.SelectedSkin);
+        var userSettings = SettingsProvider.GetUserSettings();
+        userSettings.AddCustomSkin(this.SelectedSkin.Name);
+        SettingsProvider.SaveUserSettings(userSettings);
     }
 
     private void LoadLocalCustomSkins()
@@ -96,6 +125,14 @@ public class SkinManagerViewModel : ObservableObject
         {
             this.Skins.Add(skin);
         }
+
+        if(this.Skins.Any())
+        {
+            this.NoSkinsMessageVisibility = Visibility.Collapsed;
+            return;
+        }
+
+        this.NoSkinsMessageVisibility = Visibility.Visible;
     }
 
     private void LoadRemoteCustomSkins()
@@ -106,8 +143,14 @@ public class SkinManagerViewModel : ObservableObject
         var remoteSkins = StorageProvider.GetCustomSkins()
                                          .GetAwaiter()
                                          .GetResult();
+        var userSettings = SettingsProvider.GetUserSettings();
         foreach(var remoteSkin in remoteSkins)
         {
+            if(userSettings.IsUserSkin(remoteSkin.Name))
+            {
+                continue;
+            }
+
             var localSkin = this.Skins.FirstOrDefault(s => s.Name == remoteSkin.Name);
             if(localSkin == null)
             {
@@ -119,8 +162,8 @@ public class SkinManagerViewModel : ObservableObject
             }
         }
 
-        this.newSkinCount = this.newRemoteSkins.Count;
-        this.updatedSkinCount = this.updatedRemoteSkins.Count;
+        this.NewSkinCount = this.newRemoteSkins.Count;
+        this.UpdatedSkinCount = this.updatedRemoteSkins.Count;
         this.IsSyncEnabled = this.newSkinCount + this.updatedSkinCount > 0;
     }
 }

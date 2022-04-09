@@ -8,6 +8,7 @@ public static class PathProvider
 {
     public const string AppSettingsFileName = "appsettings.json";
     private const string UserSettingsFileName = "userSettings.json";
+    private const string SyncDownloadsFolderName = "SkinSync";
 
     static PathProvider()
     {
@@ -21,11 +22,13 @@ public static class PathProvider
         AppFolderPath = Path.GetDirectoryName(executionFolder)!;
         DefaultSettingsFilePath = Path.Combine(AppFolderPath!, AppSettingsFileName);
         UserSettingsFilePath = Path.Combine(AppDataFolderPath, UserSettingsFileName);
+        SyncDownloadsFolderPath = Path.Combine(AppDataFolderPath, SyncDownloadsFolderName);
     }
 
     public static string AppDataFolderPath { get; }
     public static string AppFolderPath { get; }
     public static string AppSettingsFilePath { get; }
     public static string DefaultSettingsFilePath { get; }
+    public static string SyncDownloadsFolderPath { get; }
     public static string UserSettingsFilePath { get; }
 }

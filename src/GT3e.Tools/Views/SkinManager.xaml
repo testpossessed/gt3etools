@@ -27,6 +27,73 @@
                   BorderBrush="DarkGray"
                   MaxHeight="500"
                   VerticalAlignment="Top"
+                  Header="Sync"
+                  MaxWidth="800">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+
+                <TextBlock Grid.Row="0"
+                           Grid.Column="0"
+                           Grid.ColumnSpan="2"
+                           TextWrapping="Wrap"
+                           MaxWidth="700"
+                           Margin="5">
+                    Before you race it is important to make sure you have the latest skins from other members.  We can
+                    take care of that for you.
+                    Check below if there are New or Updated Skins click the Sync button and we will take care of the
+                    rest.
+                </TextBlock>
+                <Label Grid.Row="1"
+                       Grid.Column="0">
+                    New Skins:
+                </Label>
+                <TextBlock Grid.Row="1"
+                           Grid.Column="1"
+                           Text="{Binding NewSkinCount}" />
+                <Label Grid.Row="2"
+                       Grid.Column="0">
+                    Updated Skins:
+                </Label>
+                <TextBlock Grid.Row="2"
+                           Grid.Column="1"
+                           Text="{Binding UpdatedSkinCount}" />
+                <StackPanel Grid.Row="3"
+                            Grid.Column="1"
+                            Orientation="Horizontal"
+                            HorizontalAlignment="Right">
+                    <Button HorizontalAlignment="Right"
+                            Command="{Binding SyncSkinsCommand}"
+                            Height="30"
+                            Width="70" IsEnabled="{Binding IsSyncEnabled}">
+                        Sync
+                    </Button>
+                    <Button Command="{Binding RefreshRemoteSkinsCommand}"
+                            VerticalAlignment="Center"
+                            Margin="5,2">
+                        <Image Source="/GT3e.Tools;component/Restore.ico"
+                               Width="32"
+                               Height="32" />
+
+                    </Button>
+                </StackPanel>
+            </Grid>
+        </GroupBox>
+        <GroupBox Grid.Row="2"
+                  Padding="10"
+                  BorderThickness="1"
+                  BorderBrush="DarkGray"
+                  MaxHeight="500"
+                  VerticalAlignment="Top"
                   Header="Upload"
                   MaxWidth="800">
             <Grid>
@@ -36,6 +103,7 @@
                 </Grid.ColumnDefinitions>
 
                 <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
@@ -112,63 +180,33 @@
                         Margin="5">
                     Upload
                 </Button>
-
-            </Grid>
-
-        </GroupBox>
-        <GroupBox Grid.Row="2"
-                  Padding="10"
-                  BorderThickness="1"
-                  BorderBrush="DarkGray"
-                  MaxHeight="500"
-                  VerticalAlignment="Top"
-                  Header="Sync"
-                  MaxWidth="800">
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto" />
-                    <ColumnDefinition Width="Auto" />
-                </Grid.ColumnDefinitions>
-
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
-                </Grid.RowDefinitions>
-
-                <TextBlock Grid.Row="0"
+                <TextBlock Grid.Row="5"
                            Grid.Column="0"
                            Grid.ColumnSpan="2"
-                           TextWrapping="Wrap"
-                           MaxWidth="700"
-                           Margin="5">
-                    Before you race it is important to make sure you have the latest skins from other members.  We can
-                    take care of that for you.
-                    Check below if there are new or modified skins click the Sync button and we will take care of the
-                    rest.
+                           Margin="5"
+                           Foreground="Red"
+                           Visibility="{Binding NoSkinsMessageVisibility}"
+                           TextWrapping="Wrap">
+                    We did not find any custom skins with the correct naming convention on your computer.  If you think
+                    this is incorrect please double check the names match these rules:
+                    <LineBreak />
+                    <LineBreak />
+                    1. Names must comprise 4 parts separated by hyphens.
+                    <LineBreak />
+                    2. The first part must be your allocated race number in 3 digit format e.g. 056, 009, 999.
+                    <LineBreak />
+                    3. The second part must be your last name.
+                    <LineBreak />
+                    4. The third part must be a valid symbol for the car see https://www.gt3e.com/liveries for details.
+                    <LineBreak />
+                    5. The last part must be the car class at the moment only GT3 is valid.
+                    <LineBreak />
+                    <LineBreak />
+                    Some valid examples are 056-Hanson-MC720S-GT3, 057-BLYTH-AMRV8-GT3, 007-BOND-AMRV8-GT3
                 </TextBlock>
-                <Label Grid.Row="1"
-                       Grid.Column="0">
-                    New Skins:
-                </Label>
-                <TextBlock Grid.Row="1"
-                           Grid.Column="1"
-                           Text="{Binding NewSkinCount}" />
-                <Label Grid.Row="2"
-                       Grid.Column="0">
-                    Updated Skins:
-                </Label>
-                <TextBlock Grid.Row="2"
-                           Grid.Column="1"
-                           Text="{Binding UpdatedSkinCount}" />
-                <Button Grid.Row="3"
-                        Grid.Column="1"
-                        HorizontalAlignment="Right"
-                        Command="{Binding SyncSkinsCommand}">
-                    Sync
-                </Button>
+
             </Grid>
+
         </GroupBox>
     </Grid>
 </UserControl>

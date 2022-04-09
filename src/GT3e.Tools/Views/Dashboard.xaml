@@ -21,6 +21,7 @@
                 <Grid HorizontalAlignment="Center">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
                         <RowDefinition Height="*" />
                     </Grid.RowDefinitions>
 
@@ -72,6 +73,7 @@
                             </Button>
                         </StackPanel>
                     </Border>
+                    <TextBlock Grid.Row="2">MORE COMING TO YOUR DASHBOARD SOON!!!</TextBlock>
                 </Grid>
             </syncfusion:TabItemExt>
             <syncfusion:TabItemExt Header="Skins" >

@@ -200,7 +200,57 @@ internal class StorageProvider
             (from page in pages from item in page.Values select new CustomSkinInfo
                 {
                     FileName = item.Name,
-                    LastModifiedUtc = item.Properties.LastModified.GetValueOrDefault().ToUniversalTime().DateTime
+                    LastModifiedUtc = item.Properties.LastModified.GetValueOrDefault().ToUniversalTime().DateTime,
+                    ContentLength = item.Properties.ContentLength.GetValueOrDefault()
                 }).ToList());
+    }
+
+    public static async Task<string> DownloadCustomSkin(CustomSkinInfo customSkin)
+    {
+        var message = $"Downloading skin {customSkin.Name}";
+        LogWriter.Info(message);
+        ConsoleLog.Write(message);
+
+        var systemSettings = SettingsProvider.GetSystemSettings();
+
+        var blobContainerClient =
+            new BlobContainerClient(systemSettings.StorageConnectionString, "custom-skins");
+        var blobClient = blobContainerClient.GetBlobClient(customSkin.FileName);
+
+        var progressHandler = new Progress<long>();
+        var lastProgress = 0D;
+        progressHandler.ProgressChanged += (sender, bytesDownloaded) =>
+                                           {
+                                               if(bytesDownloaded <= 0)
+                                               {
+                                                   return;
+                                               }
+
+                                               var progress = customSkin.ContentLength > 0 ? Math.Floor((double) bytesDownloaded / customSkin.ContentLength * 100): bytesDownloaded;
+                                               if(progress > lastProgress && progress % 10 == 0)
+                                               {
+                                                   ConsoleLog.Write($"Downloaded {progress}{(customSkin.ContentLength > 0? "%":" bytes")}...");
+                                               }
+
+                                               lastProgress = progress;
+                                           };
+
+        var options = new BlobDownloadToOptions
+        {
+            ProgressHandler = progressHandler,
+            TransferOptions = new StorageTransferOptions
+            {
+                MaximumTransferSize = 4 * 1024 * 1024,
+                InitialTransferSize = 4 * 1024 * 1024
+            }
+        };
+
+        var zipFilePath = Path.Combine(PathProvider.SyncDownloadsFolderPath, customSkin.FileName);
+        await blobClient.DownloadToAsync(zipFilePath, options, CancellationToken.None);
+        message = $"Downloaded skin {customSkin.Name}";
+        LogWriter.Info(message);
+        ConsoleLog.Write(message);
+
+        return zipFilePath;
     }
 }
