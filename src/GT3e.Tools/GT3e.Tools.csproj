@@ -49,7 +49,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\gt3e-admin\src\GT3e.Acc\GT3e.Acc.csproj" />
+    <ProjectReference Include="..\..\acclib\Acc.Lib.csproj" />
   </ItemGroup>
 
   <ItemGroup>

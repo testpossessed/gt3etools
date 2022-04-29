@@ -1,49 +1,48 @@
 ﻿using System.IO;
 using System.IO.Compression;
 using System.Threading;
-using System.Threading.Tasks;
-using GT3e.Acc;
-using GT3e.Acc.Models.Customs;
-using GT3e.Tools.Models;
+using Acc.Lib;
+using Acc.Lib.Models.Customs;
 
 namespace GT3e.Tools.Services;
 
 internal class FilePackager
 {
-    internal static string PackageVerificationTestFiles(string steamId,
-        string resultFilePath,
-        string replayFilePath)
-    {
-        var zipFilePath = Path.Combine(PathProvider.AppDataFolderPath, $"{steamId}.zip");
-        using var zipToOpen = new FileStream(zipFilePath, FileMode.Create);
-        using var archive = new ZipArchive(zipToOpen, ZipArchiveMode.Update);
-        archive.CreateEntryFromFile(resultFilePath, $"{steamId}.json");
-        Thread.Sleep(1000);
-        archive.CreateEntryFromFile(replayFilePath, $"{steamId}.rpy");
+  internal static string PackageCustomSkin(CustomSkin customSkin)
+  {
+    var zipFilePath = Path.Combine(PathProvider.AppDataFolderPath, $"{customSkin.Name}.zip");
+    var imageFilePaths = Directory.GetFiles(customSkin.FolderPath, "*.png");
 
-        return zipFilePath;
+    using var zipToOpen = new FileStream(zipFilePath, FileMode.Create);
+    using var archive = new ZipArchive(zipToOpen, ZipArchiveMode.Update);
+
+    foreach(var imageFilePath in imageFilePaths)
+    {
+      archive.CreateEntryFromFile(imageFilePath,
+        $"Customs/Liveries/{customSkin.Name}/{Path.GetFileName(imageFilePath)}");
     }
 
-    internal static string PackageCustomSkin(CustomSkin customSkin)
-    {
-        var zipFilePath = Path.Combine(PathProvider.AppDataFolderPath, $"{customSkin.Name}.zip");
-        var imageFilePaths = Directory.GetFiles(customSkin.FolderPath, "*.png");
+    return zipFilePath;
+  }
 
-        using var zipToOpen = new FileStream(zipFilePath, FileMode.Create);
-        using var archive = new ZipArchive(zipToOpen, ZipArchiveMode.Update);
+  internal static string PackageVerificationTestFiles(string steamId,
+    string resultFilePath,
+    string replayFilePath)
+  {
+    var zipFilePath = Path.Combine(PathProvider.AppDataFolderPath, $"{steamId}.zip");
+    using var zipToOpen = new FileStream(zipFilePath, FileMode.Create);
+    using var archive = new ZipArchive(zipToOpen, ZipArchiveMode.Update);
+    archive.CreateEntryFromFile(resultFilePath, $"{steamId}.json");
+    Thread.Sleep(1000);
+    archive.CreateEntryFromFile(replayFilePath, $"{steamId}.rpy");
 
-        foreach(var imageFilePath in imageFilePaths)
-        {
-            archive.CreateEntryFromFile(imageFilePath, $"Customs/Liveries/{customSkin.Name}/{Path.GetFileName(imageFilePath)}");
-        }
-        
-        return zipFilePath;
-    }
+    return zipFilePath;
+  }
 
-    internal static void UnpackCustomSkin(string zipFilePath)
-    {
-        using var zipToOpen = new FileStream(zipFilePath, FileMode.Open);
-        using var archive = new ZipArchive(zipToOpen, ZipArchiveMode.Read);
-        archive.ExtractToDirectory(AccPathProvider.DocumentsFolderPath, true);
-    }
+  internal static void UnpackCustomSkin(string zipFilePath)
+  {
+    using var zipToOpen = new FileStream(zipFilePath, FileMode.Open);
+    using var archive = new ZipArchive(zipToOpen, ZipArchiveMode.Read);
+    archive.ExtractToDirectory(AccPathProvider.DocumentsFolderPath, true);
+  }
 }
